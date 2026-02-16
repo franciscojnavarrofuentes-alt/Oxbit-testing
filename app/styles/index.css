@@ -67,51 +67,41 @@
   position: relative;
 }
 
-/* NUCLEAR OPTION: Hide EVERYTHING except TradingView chart */
+/* Hide ONLY side panels (left & right), keep chart + bottom positions */
 
-/* Hide all direct children of trading page except chart container */
-.multiscreen-trading-wrapper .oui-trading-page > * {
+/* Hide left sidebar (symbol list) */
+.multiscreen-trading-wrapper .oui-trading-page > aside:first-child,
+.multiscreen-trading-wrapper .oui-trading-page > div:first-child:not(:has(iframe)),
+.multiscreen-trading-wrapper .oui-trading-page > *:first-child[class*="symbol"],
+.multiscreen-trading-wrapper .oui-trading-page > *:first-child[class*="watchlist"] {
   display: none !important;
 }
 
-/* Show only the element that contains the TradingView chart */
-.multiscreen-trading-wrapper .oui-trading-page > [class*="chart"],
-.multiscreen-trading-wrapper .oui-trading-page > div:has(iframe),
-.multiscreen-trading-wrapper .oui-trading-page > div:has([id^="tradingview_"]) {
-  display: flex !important;
-  flex: 1 !important;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Hide all nested UI elements */
-.multiscreen-trading-wrapper button,
-.multiscreen-trading-wrapper [role="tablist"],
-.multiscreen-trading-wrapper [role="tab"],
-.multiscreen-trading-wrapper aside,
-.multiscreen-trading-wrapper nav:not(.oui-mainNav) {
+/* Hide right sidebar (order book, order entry) */
+.multiscreen-trading-wrapper .oui-trading-page > aside:last-child,
+.multiscreen-trading-wrapper .oui-trading-page > div:last-child:has(button),
+.multiscreen-trading-wrapper .oui-trading-page > *:last-child[class*="order"],
+.multiscreen-trading-wrapper .oui-trading-page > *:last-child[class*="trading-panel"] {
   display: none !important;
 }
 
-/* Exception: Keep TradingView's own buttons */
-.multiscreen-trading-wrapper [class*="tv-"],
-.multiscreen-trading-wrapper iframe button {
-  display: block !important;
+/* Hide by grid position (left and right columns) */
+.multiscreen-trading-wrapper .oui-trading-page[class*="grid"] > *:nth-child(1),
+.multiscreen-trading-wrapper .oui-trading-page[class*="grid"] > *:nth-child(3) {
+  display: none !important;
 }
 
-/* Force trading page layout */
+/* Force trading page to single column layout */
 .multiscreen-trading-wrapper .oui-trading-page {
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: 100% !important;
+  grid-template-columns: 1fr !important;
 }
 
-/* Make iframe fill entire space */
-.multiscreen-trading-wrapper iframe {
+/* Keep center content (chart + positions) at full width */
+.multiscreen-trading-wrapper .oui-trading-page > [class*="main"],
+.multiscreen-trading-wrapper .oui-trading-page > div:has(iframe),
+.multiscreen-trading-wrapper .oui-trading-page > *:has([id^="tradingview_"]) {
   width: 100% !important;
-  height: 100% !important;
-  border: none !important;
+  max-width: 100% !important;
 }
 
 /* Responsive: Stack vertically on smaller screens */
