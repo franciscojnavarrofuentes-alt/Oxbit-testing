@@ -35,7 +35,7 @@ export default function MultiScreenIndex() {
             label="Left Chart"
           />
           <div className="multiscreen-trading-wrapper">
-            <CustomTradingView symbol={leftSymbol} />
+            <CustomTradingView symbol={leftSymbol} onSymbolChange={onLeftSymbolChange} />
           </div>
         </div>
 
@@ -46,7 +46,7 @@ export default function MultiScreenIndex() {
             label="Right Chart"
           />
           <div className="multiscreen-trading-wrapper">
-            <CustomTradingView symbol={rightSymbol} />
+            <CustomTradingView symbol={rightSymbol} onSymbolChange={onRightSymbolChange} />
           </div>
         </div>
       </div>

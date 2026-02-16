@@ -4,9 +4,10 @@ import { useOrderlyConfig } from "@/utils/config";
 
 interface CustomTradingViewProps {
   symbol: string;
+  onSymbolChange?: (data: any) => void;
 }
 
-export function CustomTradingView({ symbol }: CustomTradingViewProps) {
+export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewProps) {
   const config = useOrderlyConfig();
 
   // ULTRA AGGRESSIVE: Hide sidebars with continuous monitoring + MutationObserver
@@ -188,6 +189,7 @@ export function CustomTradingView({ symbol }: CustomTradingViewProps) {
     <div className="custom-trading-view-wrapper">
       <TradingPage
         symbol={symbol}
+        onSymbolChange={onSymbolChange}
         tradingViewConfig={config.tradingPage.tradingViewConfig}
         sharePnLConfig={config.tradingPage.sharePnLConfig}
       />
