@@ -13,43 +13,72 @@ export default function MultiScreenIndex() {
   const [leftSymbol, setLeftSymbol] = useState(getMultiScreenSymbol('left'));
   const [rightSymbol, setRightSymbol] = useState(getMultiScreenSymbol('right'));
 
-  // Hide side panels using JavaScript after component mounts
+  // Hide side panels using MutationObserver for dynamic content
   useEffect(() => {
     const hideSidePanels = () => {
-      // Hide all elements in multiscreen that match sidebar patterns
-      const containers = document.querySelectorAll('.multiscreen-trading-wrapper .oui-trading-page');
+      const containers = document.querySelectorAll('.multiscreen-trading-wrapper');
 
       containers.forEach(container => {
-        const allBoxes = container.querySelectorAll('.oui-box');
+        // More aggressive selector - find any element with specific text
+        const allElements = container.querySelectorAll('*');
 
-        allBoxes.forEach(box => {
-          const text = box.textContent || '';
-          const hasChart = box.querySelector('iframe') || box.querySelector('[id^="tradingview_"]');
-          const hasPositions = box.querySelector('[role="tablist"]') ||
-                              text.includes('Positions') ||
-                              text.includes('Pending');
+        allElements.forEach(element => {
+          const text = (element as HTMLElement).innerText || '';
+          const htmlElement = element as HTMLElement;
 
-          // Hide if contains Markets, Order book, or Last trades
-          if (text.includes('Markets') && !hasChart && !hasPositions) {
-            (box as HTMLElement).style.display = 'none';
-          }
-          if (text.includes('Order book') || text.includes('Last trades')) {
-            (box as HTMLElement).style.display = 'none';
+          // Check if this element or parent should be hidden
+          if (
+            text.startsWith('Markets') ||
+            text.startsWith('Order book') ||
+            text.startsWith('Last trades') ||
+            htmlElement.classList.contains('orderbook') ||
+            htmlElement.getAttribute('data-testid')?.includes('orderbook') ||
+            htmlElement.getAttribute('data-testid')?.includes('market-selector')
+          ) {
+            // Find the closest parent oui-box
+            let parent = htmlElement.closest('.oui-box');
+            if (parent) {
+              // Don't hide if it contains the chart or positions
+              const hasChart = parent.querySelector('iframe') || parent.querySelector('[id^="tradingview_"]');
+              const hasPositions = parent.querySelector('[role="tablist"]');
+
+              if (!hasChart && !hasPositions) {
+                (parent as HTMLElement).style.display = 'none';
+                console.log('Hiding panel:', text.substring(0, 30));
+              }
+            }
           }
         });
       });
     };
 
-    // Run immediately and after a short delay to catch dynamic content
+    // Create a MutationObserver to watch for DOM changes
+    const observer = new MutationObserver(() => {
+      hideSidePanels();
+    });
+
+    // Start observing
+    const containers = document.querySelectorAll('.multiscreen-trading-wrapper');
+    containers.forEach(container => {
+      observer.observe(container, {
+        childList: true,
+        subtree: true,
+      });
+    });
+
+    // Initial run with delays
     hideSidePanels();
-    const timer = setTimeout(hideSidePanels, 500);
-    const timer2 = setTimeout(hideSidePanels, 1000);
-    const timer3 = setTimeout(hideSidePanels, 2000);
+    const timer1 = setTimeout(hideSidePanels, 500);
+    const timer2 = setTimeout(hideSidePanels, 1500);
+    const timer3 = setTimeout(hideSidePanels, 3000);
+    const timer4 = setTimeout(hideSidePanels, 5000);
 
     return () => {
-      clearTimeout(timer);
+      observer.disconnect();
+      clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      clearTimeout(timer4);
     };
   }, [leftSymbol, rightSymbol]);
 

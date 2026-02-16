@@ -67,30 +67,31 @@
   position: relative;
 }
 
-/* ULTRA AGGRESSIVE: Hide all oui-box that don't contain the chart iframe */
+/* NUCLEAR OPTION: Hide specific panels by width and position */
 
-/* Step 1: Hide ALL oui-box elements by default */
-.multiscreen-trading-wrapper .oui-trading-page .oui-box {
+/* Hide left sidebar (Markets list) - typically fixed width around 240-280px */
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box:first-child {
   display: none !important;
 }
 
-/* Step 2: Show ONLY boxes that contain iframe or are chart-related */
+/* Hide right sidebar (Order book + Last trades) - typically fixed width */
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box:last-child:not(:has([role="tablist"])) {
+  display: none !important;
+}
+
+/* Alternative: Hide by checking if box has fixed width less than 400px (sidebars are usually 240-320px) */
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box[style*="width"][style*="px"]:not([style*="100%"]) {
+  display: none !important;
+}
+
+/* Show the chart container (middle section with iframe) */
 .multiscreen-trading-wrapper .oui-trading-page .oui-box:has(iframe),
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([id^="tradingview_"]),
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(canvas) {
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([id^="tradingview_"]) {
   display: flex !important;
 }
 
-/* Step 3: Show parent/ancestor boxes that contain the chart */
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box:has(iframe),
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box:has([id^="tradingview_"]),
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(.oui-box:has(iframe)) {
-  display: flex !important;
-}
-
-/* Step 4: Show the positions/orders section (bottom panel) */
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([role="tablist"]),
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(button:is([aria-label*="Position"], [aria-label*="Order"])) {
+/* Show positions panel (bottom section with tabs) */
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([role="tablist"]) {
   display: flex !important;
 }
 
