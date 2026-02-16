@@ -67,52 +67,41 @@
   position: relative;
 }
 
-/* Hide side panels by content - Markets list and Order book */
+/* ULTRA AGGRESSIVE: Hide all oui-box that don't contain the chart iframe */
 
-/* Hide Markets panel (left sidebar) by text content */
-.multiscreen-trading-wrapper [class*="market-list"],
-.multiscreen-trading-wrapper [class*="marketList"],
-.multiscreen-trading-wrapper [class*="symbol-list"],
-.multiscreen-trading-wrapper [class*="symbolList"],
-.multiscreen-trading-wrapper div:has(> div > [placeholder*="search market"]),
-.multiscreen-trading-wrapper div:has(> div > button:has-text("Markets")) {
+/* Step 1: Hide ALL oui-box elements by default */
+.multiscreen-trading-wrapper .oui-trading-page .oui-box {
   display: none !important;
 }
 
-/* Hide Order book and Last trades (right sidebar) */
-.multiscreen-trading-wrapper [class*="orderbook"],
-.multiscreen-trading-wrapper [class*="order-book"],
-.multiscreen-trading-wrapper [class*="orderBook"],
-.multiscreen-trading-wrapper div:has(> [role="tablist"]:has-text("Order book")),
-.multiscreen-trading-wrapper div:has(> div:has-text("Order book")),
-.multiscreen-trading-wrapper div:has(> div:has-text("Last trades")) {
-  display: none !important;
-}
-
-/* Hide by width (sidebars are typically fixed width like 280px, 320px) */
-.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 280"],
-.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 320"],
-.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 300"],
-.multiscreen-trading-wrapper .oui-trading-page > div[style*="min-width: 280"],
-.multiscreen-trading-wrapper .oui-trading-page > div[style*="min-width: 320"] {
-  display: none !important;
-}
-
-/* Hide panels that are definitely sidebars (not the main content) */
-.multiscreen-trading-wrapper .oui-trading-page > aside,
-.multiscreen-trading-wrapper .oui-trading-page > nav:not(.oui-mainNav),
-.multiscreen-trading-wrapper .oui-trading-page > div[class*="sidebar"],
-.multiscreen-trading-wrapper .oui-trading-page > div[class*="side-panel"] {
-  display: none !important;
-}
-
-/* Force full width for remaining content */
-.multiscreen-trading-wrapper .oui-trading-page {
+/* Step 2: Show ONLY boxes that contain iframe or are chart-related */
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(iframe),
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([id^="tradingview_"]),
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(canvas) {
   display: flex !important;
-  flex-direction: row !important;
 }
 
-.multiscreen-trading-wrapper .oui-trading-page > div:not([style*="display: none"]) {
+/* Step 3: Show parent/ancestor boxes that contain the chart */
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box:has(iframe),
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box:has([id^="tradingview_"]),
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(.oui-box:has(iframe)) {
+  display: flex !important;
+}
+
+/* Step 4: Show the positions/orders section (bottom panel) */
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([role="tablist"]),
+.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(button:is([aria-label*="Position"], [aria-label*="Order"])) {
+  display: flex !important;
+}
+
+/* Force trading page to use all available space */
+.multiscreen-trading-wrapper .oui-trading-page {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Make shown boxes take full width */
+.multiscreen-trading-wrapper .oui-trading-page > .oui-box:not([style*="display: none"]) {
   flex: 1 !important;
   width: 100% !important;
   max-width: 100% !important;
