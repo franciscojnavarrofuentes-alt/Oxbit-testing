@@ -6,5 +6,6 @@
   "extend.staking.description": "Haz staking de ORDER/esORDER para adquirir VALOR",
   "extend.swap": "Intercambiar",
   "extend.aggr": "Aggr",
-  "extend.tapesurf": "TapeSurf"
+  "extend.tapesurf": "TapeSurf",
+  "extend.multiscreen": "Multi-screen"
 }

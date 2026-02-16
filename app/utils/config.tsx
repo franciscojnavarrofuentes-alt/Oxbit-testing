@@ -80,6 +80,7 @@ const ALL_MENU_ITEMS = [
   { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
   { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
+  { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
 ];
 
 const DEFAULT_ENABLED_MENUS = [
@@ -94,6 +95,7 @@ const DEFAULT_ENABLED_MENUS = [
   },
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
   { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
+  { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {

@@ -39,6 +39,8 @@ const AggrLayout = lazy(() => import('./pages/aggr/Layout'));
 const AggrIndex = lazy(() => import('./pages/aggr/Index'));
 const TapeSurfLayout = lazy(() => import('./pages/tapesurf/Layout'));
 const TapeSurfIndex = lazy(() => import('./pages/tapesurf/Index'));
+const MultiScreenLayout = lazy(() => import('./pages/multiscreen/Layout'));
+const MultiScreenIndex = lazy(() => import('./pages/multiscreen/Index'));
 
 
 async function loadRuntimeConfig() {
@@ -167,6 +169,13 @@ const router = createBrowserRouter([
         element: <TapeSurfLayout />,
         children: [
           { index: true, element: <TapeSurfIndex /> },
+        ],
+      },
+      {
+        path: 'multiscreen',
+        element: <MultiScreenLayout />,
+        children: [
+          { index: true, element: <MultiScreenIndex /> },
         ],
       },
     ],
