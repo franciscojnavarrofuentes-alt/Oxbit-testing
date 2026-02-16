@@ -67,39 +67,53 @@
   position: relative;
 }
 
-/* Hide ONLY side panels (left & right), keep chart + bottom positions */
+/* Hide side panels by content - Markets list and Order book */
 
-/* Hide left sidebar (symbol list) */
-.multiscreen-trading-wrapper .oui-trading-page > aside:first-child,
-.multiscreen-trading-wrapper .oui-trading-page > div:first-child:not(:has(iframe)),
-.multiscreen-trading-wrapper .oui-trading-page > *:first-child[class*="symbol"],
-.multiscreen-trading-wrapper .oui-trading-page > *:first-child[class*="watchlist"] {
+/* Hide Markets panel (left sidebar) by text content */
+.multiscreen-trading-wrapper [class*="market-list"],
+.multiscreen-trading-wrapper [class*="marketList"],
+.multiscreen-trading-wrapper [class*="symbol-list"],
+.multiscreen-trading-wrapper [class*="symbolList"],
+.multiscreen-trading-wrapper div:has(> div > [placeholder*="search market"]),
+.multiscreen-trading-wrapper div:has(> div > button:has-text("Markets")) {
   display: none !important;
 }
 
-/* Hide right sidebar (order book, order entry) */
-.multiscreen-trading-wrapper .oui-trading-page > aside:last-child,
-.multiscreen-trading-wrapper .oui-trading-page > div:last-child:has(button),
-.multiscreen-trading-wrapper .oui-trading-page > *:last-child[class*="order"],
-.multiscreen-trading-wrapper .oui-trading-page > *:last-child[class*="trading-panel"] {
+/* Hide Order book and Last trades (right sidebar) */
+.multiscreen-trading-wrapper [class*="orderbook"],
+.multiscreen-trading-wrapper [class*="order-book"],
+.multiscreen-trading-wrapper [class*="orderBook"],
+.multiscreen-trading-wrapper div:has(> [role="tablist"]:has-text("Order book")),
+.multiscreen-trading-wrapper div:has(> div:has-text("Order book")),
+.multiscreen-trading-wrapper div:has(> div:has-text("Last trades")) {
   display: none !important;
 }
 
-/* Hide by grid position (left and right columns) */
-.multiscreen-trading-wrapper .oui-trading-page[class*="grid"] > *:nth-child(1),
-.multiscreen-trading-wrapper .oui-trading-page[class*="grid"] > *:nth-child(3) {
+/* Hide by width (sidebars are typically fixed width like 280px, 320px) */
+.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 280"],
+.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 320"],
+.multiscreen-trading-wrapper .oui-trading-page > div[style*="width: 300"],
+.multiscreen-trading-wrapper .oui-trading-page > div[style*="min-width: 280"],
+.multiscreen-trading-wrapper .oui-trading-page > div[style*="min-width: 320"] {
   display: none !important;
 }
 
-/* Force trading page to single column layout */
+/* Hide panels that are definitely sidebars (not the main content) */
+.multiscreen-trading-wrapper .oui-trading-page > aside,
+.multiscreen-trading-wrapper .oui-trading-page > nav:not(.oui-mainNav),
+.multiscreen-trading-wrapper .oui-trading-page > div[class*="sidebar"],
+.multiscreen-trading-wrapper .oui-trading-page > div[class*="side-panel"] {
+  display: none !important;
+}
+
+/* Force full width for remaining content */
 .multiscreen-trading-wrapper .oui-trading-page {
-  grid-template-columns: 1fr !important;
+  display: flex !important;
+  flex-direction: row !important;
 }
 
-/* Keep center content (chart + positions) at full width */
-.multiscreen-trading-wrapper .oui-trading-page > [class*="main"],
-.multiscreen-trading-wrapper .oui-trading-page > div:has(iframe),
-.multiscreen-trading-wrapper .oui-trading-page > *:has([id^="tradingview_"]) {
+.multiscreen-trading-wrapper .oui-trading-page > div:not([style*="display: none"]) {
+  flex: 1 !important;
   width: 100% !important;
   max-width: 100% !important;
 }
