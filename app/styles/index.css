@@ -106,12 +106,47 @@
   height: 100%;
 }
 
-/* Ensure positions table cells are always visible */
+/* Ensure positions table is fully visible with all columns */
+.multiscreen-trading-wrapper table {
+  display: table !important;
+  table-layout: auto !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.multiscreen-trading-wrapper table thead,
+.multiscreen-trading-wrapper table tbody {
+  display: table-row-group !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.multiscreen-trading-wrapper table tr {
+  display: table-row !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
 .multiscreen-trading-wrapper table td,
 .multiscreen-trading-wrapper table th {
   display: table-cell !important;
   visibility: visible !important;
   opacity: 1 !important;
+  max-width: none !important;
+  min-width: 50px !important;
+  padding: 8px !important;
+  white-space: nowrap !important;
+}
+
+/* Force buttons and content inside table cells to be visible */
+.multiscreen-trading-wrapper table td button,
+.multiscreen-trading-wrapper table td a,
+.multiscreen-trading-wrapper table td span,
+.multiscreen-trading-wrapper table td div {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline-block !important;
   max-width: none !important;
 }
 
