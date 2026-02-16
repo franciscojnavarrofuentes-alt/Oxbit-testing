@@ -11,7 +11,7 @@ export default function AggrIndex() {
       {renderSEOTags(pageMeta, pageTitle)}
       <div className="w-full h-full">
         <iframe
-          src="https://aggr.trade/cw35"
+          src="https://aggr.pacryptodex.com"
           className="w-full h-full border-0"
           style={{ minHeight: 'calc(100vh - 60px)' }}
           title="Aggr Trade"
