@@ -80,124 +80,14 @@
   }
 }
 
-/* Custom Trading View Styles - Direct TradingView Integration */
-.custom-trading-view {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+/* Custom Trading View Wrapper - Uses full TradingPage */
+.custom-trading-view-wrapper {
   width: 100%;
-  gap: 0;
-}
-
-.custom-trading-view .chart-container {
-  flex: 1;
-  min-height: 0;
-  background: rgba(var(--oui-color-base-9), 1);
+  height: 100%;
   overflow: hidden;
-  position: relative;
 }
 
-.custom-trading-view .tv-chart {
+.custom-trading-view-wrapper .oui-trading-page {
   width: 100%;
   height: 100%;
-}
-
-.custom-trading-view .chart-loading {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgba(var(--oui-color-base-foreground), 0.6);
-  font-size: var(--oui-font-size-base);
-}
-
-.custom-trading-view .positions-panel {
-  height: 200px;
-  background: rgba(var(--oui-color-base-9), 1);
-  border-top: 1px solid rgba(var(--oui-color-base-7), 1);
-  overflow-y: auto;
-}
-
-.custom-trading-view .positions-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(var(--oui-color-base-7), 1);
-}
-
-.custom-trading-view .positions-header h3 {
-  font-size: var(--oui-font-size-base);
-  font-weight: 600;
-  color: rgba(var(--oui-color-base-foreground), 1);
-  margin: 0;
-}
-
-.custom-trading-view .positions-content {
-  padding: 16px;
-}
-
-.custom-trading-view .positions-content table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.custom-trading-view .positions-content th {
-  text-align: left;
-  padding: 8px;
-  font-size: var(--oui-font-size-xs);
-  color: rgba(var(--oui-color-base-foreground), 0.6);
-  font-weight: 500;
-  border-bottom: 1px solid rgba(var(--oui-color-base-7), 1);
-}
-
-.custom-trading-view .positions-content td {
-  padding: 12px 8px;
-  font-size: var(--oui-font-size-sm);
-  color: rgba(var(--oui-color-base-foreground), 1);
-  border-bottom: 1px solid rgba(var(--oui-color-base-8), 1);
-}
-
-.custom-trading-view .positions-content td.positive {
-  color: rgba(var(--oui-color-trading-profit), 1);
-}
-
-.custom-trading-view .positions-content td.negative {
-  color: rgba(var(--oui-color-trading-loss), 1);
-}
-
-.custom-trading-view .positions-content p {
-  text-align: center;
-  color: rgba(var(--oui-color-base-foreground), 0.5);
-  font-size: var(--oui-font-size-sm);
-  padding: 32px;
-}
-
-/* Positions panel header with ROI */
-.custom-trading-view .positions-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.custom-trading-view .total-pnl {
-  font-size: var(--oui-font-size-sm);
-  font-weight: 600;
-}
-
-/* Long/Short indicators */
-.custom-trading-view .positions-content td.long {
-  color: rgba(var(--oui-color-trading-profit), 1);
-}
-
-.custom-trading-view .positions-content td.short {
-  color: rgba(var(--oui-color-trading-loss), 1);
-}
-
-.custom-trading-view .symbol-cell {
-  font-weight: 600;
-}
-
-.custom-trading-view .no-positions {
-  text-align: center;
-  color: rgba(var(--oui-color-base-foreground), 0.5);
-  padding: 32px;
-  margin: 0;
 }
