@@ -106,6 +106,15 @@
   height: 100%;
 }
 
+/* Ensure positions table cells are always visible */
+.multiscreen-trading-wrapper table td,
+.multiscreen-trading-wrapper table th {
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-width: none !important;
+}
+
 /* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
 /* Only hide first/last child if they don't contain chart, positions, or table data */
 .multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has([role="tab"])):not(:has(table)) {
