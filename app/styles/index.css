@@ -67,47 +67,6 @@
   position: relative;
 }
 
-/* NUCLEAR OPTION: Hide specific panels by width and position */
-
-/* Hide left sidebar (Markets list) - typically fixed width around 240-280px */
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box:first-child {
-  display: none !important;
-}
-
-/* Hide right sidebar (Order book + Last trades) - typically fixed width */
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box:last-child:not(:has([role="tablist"])) {
-  display: none !important;
-}
-
-/* Alternative: Hide by checking if box has fixed width less than 400px (sidebars are usually 240-320px) */
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box[style*="width"][style*="px"]:not([style*="100%"]) {
-  display: none !important;
-}
-
-/* Show the chart container (middle section with iframe) */
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has(iframe),
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([id^="tradingview_"]) {
-  display: flex !important;
-}
-
-/* Show positions panel (bottom section with tabs) */
-.multiscreen-trading-wrapper .oui-trading-page .oui-box:has([role="tablist"]) {
-  display: flex !important;
-}
-
-/* Force trading page to use all available space */
-.multiscreen-trading-wrapper .oui-trading-page {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Make shown boxes take full width */
-.multiscreen-trading-wrapper .oui-trading-page > .oui-box:not([style*="display: none"]) {
-  flex: 1 !important;
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
 /* Responsive: Stack vertically on smaller screens */
 @media (max-width: 1024px) {
   .multiscreen-container {
@@ -121,7 +80,7 @@
   }
 }
 
-/* Custom Trading View Styles */
+/* Custom Trading View Styles - Direct TradingView Integration */
 .custom-trading-view {
   display: flex;
   flex-direction: column;
@@ -138,26 +97,18 @@
   position: relative;
 }
 
-/* Hide sidebars from TradingPage within CustomTradingView */
-.custom-trading-view .chart-container .oui-trading-page > .oui-box:first-child {
-  display: none !important;
+.custom-trading-view .tv-chart {
+  width: 100%;
+  height: 100%;
 }
 
-.custom-trading-view .chart-container .oui-trading-page > .oui-box:last-child:not(:has(iframe)):not(:has([id^="tradingview_"])) {
-  display: none !important;
-}
-
-/* Show the chart */
-.custom-trading-view .chart-container .oui-trading-page .oui-box:has(iframe),
-.custom-trading-view .chart-container .oui-trading-page .oui-box:has([id^="tradingview_"]) {
-  display: flex !important;
-  flex: 1 !important;
-  width: 100% !important;
-}
-
-/* Hide the bottom positions panel from TradingPage (we have our own) */
-.custom-trading-view .chart-container .oui-trading-page .oui-box:has([role="tablist"]) {
-  display: none !important;
+.custom-trading-view .chart-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(var(--oui-color-base-foreground), 0.6);
+  font-size: var(--oui-font-size-base);
 }
 
 .custom-trading-view .positions-panel {
