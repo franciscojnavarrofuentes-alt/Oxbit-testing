@@ -78,6 +78,7 @@ const ALL_MENU_ITEMS = [
   },
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
 ];
 
 const DEFAULT_ENABLED_MENUS = [
