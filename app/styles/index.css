@@ -67,11 +67,35 @@
   position: relative;
 }
 
-/* Hide order entry panel - requires browser inspection to confirm selector */
+/* Hide symbol list (left column) */
+.multiscreen-trading-wrapper [class*="symbolList"],
+.multiscreen-trading-wrapper [class*="symbol-list"],
+.multiscreen-trading-wrapper [class*="watchlist"],
+.multiscreen-trading-wrapper aside {
+  display: none !important;
+}
+
+/* Hide order entry panel and order book */
 .multiscreen-trading-wrapper [class*="orderEntry"],
 .multiscreen-trading-wrapper [class*="order-entry"],
 .multiscreen-trading-wrapper [class*="OrderEntry"],
-.multiscreen-trading-wrapper [data-testid*="order"] {
+.multiscreen-trading-wrapper [class*="orderBook"],
+.multiscreen-trading-wrapper [class*="order-book"],
+.multiscreen-trading-wrapper [data-testid*="order"],
+.multiscreen-trading-wrapper [class*="tradingPanel"],
+.multiscreen-trading-wrapper [class*="trading-panel"] {
+  display: none !important;
+}
+
+/* Force trading page to be full width without sidebars */
+.multiscreen-trading-wrapper .oui-trading-page {
+  grid-template-columns: 1fr !important;
+}
+
+/* Hide any sidebars/panels */
+.multiscreen-trading-wrapper .oui-trading-page > aside,
+.multiscreen-trading-wrapper .oui-trading-page > [class*="sidebar"],
+.multiscreen-trading-wrapper .oui-trading-page > [class*="panel"]:not([class*="chart"]) {
   display: none !important;
 }
 
