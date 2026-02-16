@@ -13,7 +13,7 @@ export default function SymbolSelector({
   onSymbolChange,
   label
 }: SymbolSelectorProps) {
-  const { data: markets } = useMarkets();
+  const { data: markets, isLoading } = useMarkets();
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
@@ -23,6 +23,7 @@ export default function SymbolSelector({
     }
   }, [markets, onSymbolChange]);
 
+  // Always render the selector, even while loading
   return (
     <div className="multiscreen-symbol-selector">
       {label && (
@@ -32,12 +33,19 @@ export default function SymbolSelector({
         value={symbol}
         onChange={handleChange}
         className="multiscreen-symbol-select"
+        disabled={isLoading || !markets || markets.length === 0}
       >
-        {markets?.map(market => (
-          <option key={market.symbol} value={market.symbol}>
-            {market.symbol.replace('PERP_', '').replace('_USDC', '')}
-          </option>
-        ))}
+        {isLoading ? (
+          <option>Loading markets...</option>
+        ) : !markets || markets.length === 0 ? (
+          <option>No markets available</option>
+        ) : (
+          markets.map(market => (
+            <option key={market.symbol} value={market.symbol}>
+              {market.symbol.replace('PERP_', '').replace('_USDC', '')}
+            </option>
+          ))
+        )}
       </select>
     </div>
   );
