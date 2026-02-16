@@ -67,71 +67,51 @@
   position: relative;
 }
 
-/* Hide ALL UI elements except the chart */
-/* Hide symbol list, sidebars, and left column */
-.multiscreen-trading-wrapper [class*="symbolList"],
-.multiscreen-trading-wrapper [class*="symbol-list"],
-.multiscreen-trading-wrapper [class*="watchlist"],
-.multiscreen-trading-wrapper aside,
-.multiscreen-trading-wrapper [class*="sidebar"] {
+/* NUCLEAR OPTION: Hide EVERYTHING except TradingView chart */
+
+/* Hide all direct children of trading page except chart container */
+.multiscreen-trading-wrapper .oui-trading-page > * {
   display: none !important;
 }
 
-/* Hide order entry panel, order book, and all trading panels */
-.multiscreen-trading-wrapper [class*="orderEntry"],
-.multiscreen-trading-wrapper [class*="order-entry"],
-.multiscreen-trading-wrapper [class*="OrderEntry"],
-.multiscreen-trading-wrapper [class*="orderBook"],
-.multiscreen-trading-wrapper [class*="order-book"],
-.multiscreen-trading-wrapper [class*="tradingPanel"],
-.multiscreen-trading-wrapper [class*="trading-panel"],
-.multiscreen-trading-wrapper [data-testid*="order"] {
-  display: none !important;
-}
-
-/* Hide positions panel, tabs, and bottom sections */
-.multiscreen-trading-wrapper [class*="positions"],
-.multiscreen-trading-wrapper [class*="Positions"],
-.multiscreen-trading-wrapper [class*="pending"],
-.multiscreen-trading-wrapper [class*="Pending"],
-.multiscreen-trading-wrapper [class*="tabs"],
-.multiscreen-trading-wrapper [class*="Tabs"],
-.multiscreen-trading-wrapper [role="tablist"],
-.multiscreen-trading-wrapper [class*="bottomBar"],
-.multiscreen-trading-wrapper [class*="bottom-bar"] {
-  display: none !important;
-}
-
-/* Hide layout, risk, and utility buttons */
-.multiscreen-trading-wrapper [class*="layoutButton"],
-.multiscreen-trading-wrapper [class*="riskButton"],
-.multiscreen-trading-wrapper button[class*="layout"],
-.multiscreen-trading-wrapper button[class*="risk"],
-.multiscreen-trading-wrapper [class*="utilities"] {
-  display: none !important;
-}
-
-/* Hide connect wallet button and footer elements */
-.multiscreen-trading-wrapper [class*="connectWallet"],
-.multiscreen-trading-wrapper [class*="connect-wallet"],
-.multiscreen-trading-wrapper button:has-text("Connect wallet"),
-.multiscreen-trading-wrapper [class*="footer"] {
-  display: none !important;
-}
-
-/* Force trading page to show only chart */
-.multiscreen-trading-wrapper .oui-trading-page {
-  grid-template-columns: 1fr !important;
-  grid-template-rows: 1fr !important;
-}
-
-/* Make chart container fill entire space */
-.multiscreen-trading-wrapper [class*="chartContainer"],
-.multiscreen-trading-wrapper [class*="chart-container"],
-.multiscreen-trading-wrapper [class*="tradingview"] {
+/* Show only the element that contains the TradingView chart */
+.multiscreen-trading-wrapper .oui-trading-page > [class*="chart"],
+.multiscreen-trading-wrapper .oui-trading-page > div:has(iframe),
+.multiscreen-trading-wrapper .oui-trading-page > div:has([id^="tradingview_"]) {
+  display: flex !important;
+  flex: 1 !important;
   width: 100% !important;
   height: 100% !important;
-  flex: 1 !important;
+}
+
+/* Hide all nested UI elements */
+.multiscreen-trading-wrapper button,
+.multiscreen-trading-wrapper [role="tablist"],
+.multiscreen-trading-wrapper [role="tab"],
+.multiscreen-trading-wrapper aside,
+.multiscreen-trading-wrapper nav:not(.oui-mainNav) {
+  display: none !important;
+}
+
+/* Exception: Keep TradingView's own buttons */
+.multiscreen-trading-wrapper [class*="tv-"],
+.multiscreen-trading-wrapper iframe button {
+  display: block !important;
+}
+
+/* Force trading page layout */
+.multiscreen-trading-wrapper .oui-trading-page {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Make iframe fill entire space */
+.multiscreen-trading-wrapper iframe {
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
 }
 
 /* Responsive: Stack vertically on smaller screens */
