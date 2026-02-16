@@ -79,6 +79,7 @@ const ALL_MENU_ITEMS = [
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
 ];
 
 const DEFAULT_ENABLED_MENUS = [
@@ -92,6 +93,7 @@ const DEFAULT_ENABLED_MENUS = [
     translationKey: "tradingLeaderboard.leaderboard",
   },
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {

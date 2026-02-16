@@ -37,6 +37,8 @@ const PointsLayout = lazy(() => import('./pages/points/Layout'));
 const PointsIndex = lazy(() => import('./pages/points/Index'));
 const AggrLayout = lazy(() => import('./pages/aggr/Layout'));
 const AggrIndex = lazy(() => import('./pages/aggr/Index'));
+const TapeSurfLayout = lazy(() => import('./pages/tapesurf/Layout'));
+const TapeSurfIndex = lazy(() => import('./pages/tapesurf/Index'));
 
 
 async function loadRuntimeConfig() {
@@ -158,6 +160,13 @@ const router = createBrowserRouter([
         element: <AggrLayout />,
         children: [
           { index: true, element: <AggrIndex /> },
+        ],
+      },
+      {
+        path: 'tapesurf',
+        element: <TapeSurfLayout />,
+        children: [
+          { index: true, element: <TapeSurfIndex /> },
         ],
       },
     ],
