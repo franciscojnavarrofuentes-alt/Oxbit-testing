@@ -30,7 +30,7 @@
 
 /* Symbol selector styling - Enhanced visibility */
 .multiscreen-symbol-selector {
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 12px;
   padding: 16px;
@@ -39,6 +39,8 @@
   border-radius: var(--oui-rounded-lg);
   margin-bottom: 12px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  position: relative;
 }
 
 .multiscreen-symbol-label {
@@ -102,4 +104,19 @@
 .custom-trading-view-wrapper .oui-trading-page {
   width: 100%;
   height: 100%;
+}
+
+/* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
+.multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])) {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
+}
+
+.multiscreen-trading-wrapper .oui-box:last-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])) {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  opacity: 0 !important;
 }
