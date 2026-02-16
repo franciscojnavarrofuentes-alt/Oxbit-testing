@@ -91,6 +91,7 @@ const DEFAULT_ENABLED_MENUS = [
     href: "/leaderboard",
     translationKey: "tradingLeaderboard.leaderboard",
   },
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {
