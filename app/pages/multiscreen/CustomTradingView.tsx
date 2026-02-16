@@ -48,12 +48,24 @@ export function CustomTradingView({ symbol }: CustomTradingViewProps) {
                         htmlBox.querySelector('.tv-lightweight-charts');
 
         // Check if it contains positions panel (should NOT hide)
+        // Very comprehensive protection for positions/orders area
         const hasPositions = htmlBox.querySelector('[role="tablist"]') ||
+                            htmlBox.querySelector('[role="tab"]') ||
+                            htmlBox.querySelector('table') ||
+                            htmlBox.querySelector('tbody') ||
                             text.includes('Positions') ||
+                            text.includes('Pending') ||
                             text.includes('Orders') ||
                             text.includes('TP/SL') ||
                             text.includes('Close all') ||
-                            text.includes('Unrealized PnL');
+                            text.includes('Unrealized') ||
+                            text.includes('PnL') ||
+                            text.includes('Filled') ||
+                            text.includes('Assets') ||
+                            text.includes('Liquidation') ||
+                            text.includes('Mark price') ||
+                            text.includes('Entry price') ||
+                            text.includes('Notional');
 
         if (hasChart || hasPositions) {
           return; // Don't hide chart or positions
@@ -75,7 +87,10 @@ export function CustomTradingView({ symbol }: CustomTradingViewProps) {
           text.includes('Orderbook') ||
           text.includes('Bid') ||
           text.includes('Ask') ||
-          (text.includes('Price') && text.includes('Amount'));
+          (text.includes('Price') && text.includes('Amount')) ||
+          (text.includes('Price') && text.includes('Size')) ||
+          htmlBox.querySelector('[role="tab"][aria-label*="Order"]') !== null ||
+          htmlBox.querySelector('[role="tab"][aria-label*="trades"]') !== null;
 
         // Positional detection
         const parent = htmlBox.parentElement;
@@ -113,6 +128,21 @@ export function CustomTradingView({ symbol }: CustomTradingViewProps) {
             forceHideElement(htmlEl, `Class-based: ${selector}`);
           }
         });
+      });
+
+      // Strategy 3: Find containers with Order book/Last trades tabs and hide them
+      const allElements = document.querySelectorAll('.multiscreen-trading-wrapper *');
+      allElements.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        const innerText = htmlEl.innerText || '';
+
+        // Check if this element contains Order book or Last trades tabs
+        const hasOrderBookTab = innerText.includes('Order book') && innerText.includes('Last trades');
+
+        if (hasOrderBookTab && !htmlEl.querySelector('iframe') && !htmlEl.querySelector('[role="tablist"]')) {
+          // This is likely the right sidebar container
+          forceHideElement(htmlEl, 'Container with Order book/Last trades tabs');
+        }
       });
 
       // Stop after MAX_ATTEMPTS

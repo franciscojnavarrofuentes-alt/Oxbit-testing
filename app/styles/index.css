@@ -107,16 +107,19 @@
 }
 
 /* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
-.multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])) {
+/* Only hide first/last child if they don't contain chart, positions, or table data */
+.multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has([role="tab"])):not(:has(table)) {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
   opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-.multiscreen-trading-wrapper .oui-box:last-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])) {
+.multiscreen-trading-wrapper .oui-box:last-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has([role="tab"])):not(:has(table)) {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
   opacity: 0 !important;
+  pointer-events: none !important;
 }
