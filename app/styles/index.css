@@ -63,15 +63,26 @@
   height: 100%;
 }
 
-/* SURGICAL: Hide sidebars by specific Orderly UI classes (from HTML analysis) */
+/* SURGICAL: Hide sidebars by specific Orderly UI classes and IDs (from HTML analysis) */
 
-/* Both Markets sidebar and Order book sidebar use w-split-pane class with width: 280px */
+/* Order book sidebar uses w-split-pane class with width: 280px */
 /* Positions panel also has w-split-pane but with height: 350px, so we target by width */
 .custom-trading-view-wrapper .oui-box.w-split-pane[style*="width: 280px"] {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
   max-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* Markets sidebar has unique ID oui-side-markets with width: 70px */
+.custom-trading-view-wrapper #oui-side-markets {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
   opacity: 0 !important;
   overflow: hidden !important;
   position: absolute !important;
