@@ -78,11 +78,12 @@
   pointer-events: none !important;
 }
 
-/* Markets sidebar has unique ID oui-side-markets with width: 70px */
-.custom-trading-view-wrapper #oui-side-markets {
+/* Markets sidebar container has width: 70px (parent of #oui-side-markets) */
+.custom-trading-view-wrapper .oui-box[style*="min-width: 70px"][style*="--oui-width: 70px"] {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0 !important;
   overflow: hidden !important;
   position: absolute !important;
