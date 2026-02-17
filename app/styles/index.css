@@ -65,9 +65,9 @@
 
 /* SURGICAL: Hide sidebars by specific Orderly UI classes (from HTML analysis) */
 
-/* Both Markets sidebar and Order book sidebar use w-split-pane class */
-/* This targets elements with both oui-size-height AND w-split-pane classes */
-.custom-trading-view-wrapper .oui-box.w-split-pane {
+/* Both Markets sidebar and Order book sidebar use w-split-pane class with width: 280px */
+/* Positions panel also has w-split-pane but with height: 350px, so we target by width */
+.custom-trading-view-wrapper .oui-box.w-split-pane[style*="width: 280px"] {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
