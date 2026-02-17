@@ -54,6 +54,10 @@ export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewP
                             htmlBox.querySelector('[role="tab"]') ||
                             htmlBox.querySelector('table') ||
                             htmlBox.querySelector('tbody') ||
+                            htmlBox.querySelector('thead') ||
+                            htmlBox.querySelector('tr') ||
+                            htmlBox.querySelector('td') ||
+                            htmlBox.querySelector('th') ||
                             text.includes('Positions') ||
                             text.includes('Pending') ||
                             text.includes('Orders') ||
@@ -66,7 +70,10 @@ export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewP
                             text.includes('Liquidation') ||
                             text.includes('Mark price') ||
                             text.includes('Entry price') ||
-                            text.includes('Notional');
+                            text.includes('Notional') ||
+                            text.includes('Symbol') ||
+                            text.includes('Qty') ||
+                            text.includes('Est.Liq.Price');
 
         if (hasChart || hasPositions) {
           return; // Don't hide chart or positions

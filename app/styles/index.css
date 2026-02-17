@@ -19,6 +19,7 @@
   padding: 12px;
   height: calc(100vh - 60px);
   overflow: hidden;
+  min-width: 1600px; /* Ensure enough space for tables */
 }
 
 .multiscreen-chart-panel {
@@ -79,6 +80,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
+  min-width: 750px; /* Force minimum width to prevent responsive column hiding */
 }
 
 /* Responsive: Stack vertically on smaller screens */
@@ -106,7 +108,7 @@
   height: 100%;
 }
 
-/* Force table columns to be visible with proper width */
+/* Force table to display all columns - CRITICAL for positions table */
 .multiscreen-trading-wrapper table {
   table-layout: auto !important;
   width: 100% !important;
@@ -114,16 +116,20 @@
 
 .multiscreen-trading-wrapper table td,
 .multiscreen-trading-wrapper table th {
-  min-width: 80px !important;
-  max-width: none !important;
+  display: table-cell !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 60px !important;
+  padding: 8px 12px !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
 }
 
+/* Ensure first column (Symbol) always shows */
 .multiscreen-trading-wrapper table td:first-child,
 .multiscreen-trading-wrapper table th:first-child {
-  min-width: 120px !important;
+  display: table-cell !important;
+  min-width: 100px !important;
+  visibility: visible !important;
 }
 
 /* Force all table cell content to be visible */
@@ -131,9 +137,19 @@
 .multiscreen-trading-wrapper table th * {
   visibility: visible !important;
   opacity: 1 !important;
-  display: inline !important;
-  color: inherit !important;
+  display: inline-block !important;
   max-width: none !important;
+}
+
+/* Override Orderly's responsive hiding */
+.multiscreen-trading-wrapper [style*="display: none"] {
+  display: table-cell !important;
+}
+
+.multiscreen-trading-wrapper td[style*="display: none"],
+.multiscreen-trading-wrapper th[style*="display: none"] {
+  display: table-cell !important;
+  visibility: visible !important;
 }
 
 /* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
