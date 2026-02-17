@@ -41,6 +41,8 @@ const TapeSurfLayout = lazy(() => import('./pages/tapesurf/Layout'));
 const TapeSurfIndex = lazy(() => import('./pages/tapesurf/Index'));
 const MultiScreenLayout = lazy(() => import('./pages/multiscreen/Layout'));
 const MultiScreenIndex = lazy(() => import('./pages/multiscreen/Index'));
+const StakingLayout = lazy(() => import('./pages/staking/Layout'));
+const StakingIndex = lazy(() => import('./pages/staking/Index'));
 
 
 async function loadRuntimeConfig() {
@@ -176,6 +178,13 @@ const router = createBrowserRouter([
         element: <MultiScreenLayout />,
         children: [
           { index: true, element: <MultiScreenIndex /> },
+        ],
+      },
+      {
+        path: 'staking',
+        element: <StakingLayout />,
+        children: [
+          { index: true, element: <StakingIndex /> },
         ],
       },
     ],

@@ -81,6 +81,7 @@ const ALL_MENU_ITEMS = [
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
   { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
 ];
 
 const DEFAULT_ENABLED_MENUS = [
@@ -96,6 +97,7 @@ const DEFAULT_ENABLED_MENUS = [
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
   { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {
