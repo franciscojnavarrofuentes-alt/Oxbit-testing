@@ -18,7 +18,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_APP_DESCRIPTION": "Your DEX",
   "VITE_HAS_PRIMARY_LOGO": "true",
   "VITE_HAS_SECONDARY_LOGO": "true",
-  "VITE_ENABLED_MENUS": "Leaderboard,Trading,Portfolio,Markets,Swap,Points,Vaults,Rewards,Aggr,TapeSurf,Multi-screen,Staking",
+  "VITE_ENABLED_MENUS": "Trading,Swap,Portfolio,Markets,Aggr,TapeSurf,Leaderboard,Multi-screen",
   "VITE_CUSTOM_MENUS": "",
   "VITE_ENABLE_SERVICE_DISCLAIMER_DIALOG": "false",
   "VITE_ENABLE_CAMPAIGNS": "false",

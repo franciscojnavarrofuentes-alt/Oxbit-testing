@@ -36,6 +36,12 @@ interface MainNavItem {
   name: string;
   href: string;
   target?: string;
+  children?: Array<{
+    name: string;
+    href: string;
+    description?: string;
+    target?: string;
+  }>;
 }
 
 interface ColorConfigInterface {
@@ -61,43 +67,51 @@ export type OrderlyConfig = {
   };
 };
 
+// Individual menu items (without Earn submenu items for flat list)
 const ALL_MENU_ITEMS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
+  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
+  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
+  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
+  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   {
     name: "Rewards",
     href: "/rewards",
     translationKey: "tradingRewards.rewards",
   },
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   {
     name: "Leaderboard",
     href: "/leaderboard",
     translationKey: "tradingLeaderboard.leaderboard",
   },
-  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
-  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
-  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
-  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+];
+
+// Earn submenu items
+const EARN_SUBMENU_ITEMS = [
+  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Staking", href: "/staking", translationKey: "extend.staking" },
+  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
+  { name: "Rewards", href: "/rewards", translationKey: "tradingRewards.rewards" },
 ];
 
 const DEFAULT_ENABLED_MENUS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
+  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   {
     name: "Leaderboard",
     href: "/leaderboard",
     translationKey: "tradingLeaderboard.leaderboard",
   },
-  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
-  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
-  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {
@@ -272,7 +286,25 @@ export const useOrderlyConfig = () => {
       href: menu.href,
     }));
 
-    const allMenuItems = [...translatedEnabledMenus, ...customMenus];
+    // Build Earn menu with submenu items
+    const earnMenu: MainNavItem = {
+      name: "Earn",
+      href: "#",
+      children: EARN_SUBMENU_ITEMS.map((item) => ({
+        name: t(item.translationKey),
+        href: item.href,
+        description: t(item.translationKey),
+      })),
+    };
+
+    // Insert Earn menu after Markets (position 4)
+    const menusWithEarn = [
+      ...translatedEnabledMenus.slice(0, 4), // Trading, Swap, Portfolio, Markets
+      earnMenu,
+      ...translatedEnabledMenus.slice(4), // Aggr, TapeSurf, Leaderboard, Multi-screen
+    ];
+
+    const allMenuItems = [...menusWithEarn, ...customMenus];
 
     const supportedBottomNavMenus = [
       "Trading",
