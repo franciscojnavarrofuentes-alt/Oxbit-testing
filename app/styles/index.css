@@ -63,14 +63,11 @@
   height: 100%;
 }
 
-/* SURGICAL: Hide sidebars by exact inline width (from inspector analysis) */
+/* SURGICAL: Hide sidebars by specific Orderly UI class (from inspector analysis) */
 
-/* Both Markets sidebar and Order book sidebar have exactly width: 280px inline */
-/* Only hide 280px boxes that are actual sidebars (contain tables for order book or market lists) */
-/* Protect boxes with buttons, selects, and form controls (toolbars/headers) */
-.custom-trading-view-wrapper .oui-box[style*="width: 280px"]:has(table),
-.custom-trading-view-wrapper .oui-box[style*="width: 280px"]:has([class*="market"]),
-.custom-trading-view-wrapper .oui-box[style*="width: 280px"]:has([class*="orderbook"]) {
+/* Both Markets sidebar and Order book sidebar use the oui-size-height-w-split-pane class */
+/* This class is unique to sidebars and doesn't affect top controls */
+.custom-trading-view-wrapper .oui-size-height-w-split-pane {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
