@@ -4,7 +4,6 @@ import { generatePageTitle } from "@/utils/utils";
 import { getPageMeta } from "@/utils/seo";
 import { renderSEOTags } from "@/utils/seo-tags";
 import { getMultiScreenSymbol, updateMultiScreenSymbol } from "@/utils/storage";
-import SymbolSelector from "./SymbolSelector";
 import { CustomTradingView } from "./CustomTradingView";
 
 export default function MultiScreenIndex() {
@@ -29,25 +28,11 @@ export default function MultiScreenIndex() {
       {renderSEOTags(pageMeta, pageTitle)}
       <div className="multiscreen-container">
         <div className="multiscreen-chart-panel">
-          <SymbolSelector
-            symbol={leftSymbol}
-            onSymbolChange={onLeftSymbolChange}
-            label="Left Chart"
-          />
-          <div className="multiscreen-trading-wrapper">
-            <CustomTradingView symbol={leftSymbol} onSymbolChange={onLeftSymbolChange} />
-          </div>
+          <CustomTradingView symbol={leftSymbol} onSymbolChange={onLeftSymbolChange} />
         </div>
 
         <div className="multiscreen-chart-panel">
-          <SymbolSelector
-            symbol={rightSymbol}
-            onSymbolChange={onRightSymbolChange}
-            label="Right Chart"
-          />
-          <div className="multiscreen-trading-wrapper">
-            <CustomTradingView symbol={rightSymbol} onSymbolChange={onRightSymbolChange} />
-          </div>
+          <CustomTradingView symbol={rightSymbol} onSymbolChange={onRightSymbolChange} />
         </div>
       </div>
     </>
