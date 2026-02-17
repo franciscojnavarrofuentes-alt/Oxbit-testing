@@ -106,7 +106,35 @@
   height: 100%;
 }
 
-/* Allow natural table rendering - don't interfere with TradingPage's responsive logic */
+/* Force table columns to be visible with proper width */
+.multiscreen-trading-wrapper table {
+  table-layout: auto !important;
+  width: 100% !important;
+}
+
+.multiscreen-trading-wrapper table td,
+.multiscreen-trading-wrapper table th {
+  min-width: 80px !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.multiscreen-trading-wrapper table td:first-child,
+.multiscreen-trading-wrapper table th:first-child {
+  min-width: 120px !important;
+}
+
+/* Force all table cell content to be visible */
+.multiscreen-trading-wrapper table td *,
+.multiscreen-trading-wrapper table th * {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: inline !important;
+  color: inherit !important;
+  max-width: none !important;
+}
 
 /* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
 /* Only hide first/last child if they don't contain chart, positions, or table data */
