@@ -14,12 +14,12 @@
 /* Multi-screen: Side-by-side layout */
 .multiscreen-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: minmax(900px, 1fr) minmax(900px, 1fr);
+  gap: 16px;
   padding: 12px;
   height: calc(100vh - 60px);
-  overflow: hidden;
-  min-width: 1600px; /* Ensure enough space for tables */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .multiscreen-chart-panel {
@@ -80,7 +80,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  min-width: 750px; /* Force minimum width to prevent responsive column hiding */
+  min-width: 850px;
 }
 
 /* Responsive: Stack vertically on smaller screens */
@@ -108,49 +108,7 @@
   height: 100%;
 }
 
-/* Force table to display all columns - CRITICAL for positions table */
-.multiscreen-trading-wrapper table {
-  table-layout: auto !important;
-  width: 100% !important;
-}
-
-.multiscreen-trading-wrapper table td,
-.multiscreen-trading-wrapper table th {
-  display: table-cell !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  min-width: 60px !important;
-  padding: 8px 12px !important;
-  white-space: nowrap !important;
-}
-
-/* Ensure first column (Symbol) always shows */
-.multiscreen-trading-wrapper table td:first-child,
-.multiscreen-trading-wrapper table th:first-child {
-  display: table-cell !important;
-  min-width: 100px !important;
-  visibility: visible !important;
-}
-
-/* Force all table cell content to be visible */
-.multiscreen-trading-wrapper table td *,
-.multiscreen-trading-wrapper table th * {
-  visibility: visible !important;
-  opacity: 1 !important;
-  display: inline-block !important;
-  max-width: none !important;
-}
-
-/* Override Orderly's responsive hiding */
-.multiscreen-trading-wrapper [style*="display: none"] {
-  display: table-cell !important;
-}
-
-.multiscreen-trading-wrapper td[style*="display: none"],
-.multiscreen-trading-wrapper th[style*="display: none"] {
-  display: table-cell !important;
-  visibility: visible !important;
-}
+/* Let TradingPage handle table rendering naturally */
 
 /* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
 /* Only hide first/last child if they don't contain chart, positions, or table data */

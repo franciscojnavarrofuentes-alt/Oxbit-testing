@@ -10,30 +10,15 @@ interface CustomTradingViewProps {
 export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewProps) {
   const config = useOrderlyConfig();
 
-  // ULTRA AGGRESSIVE: Hide sidebars with continuous monitoring + MutationObserver
+  // Hide sidebars (Markets left, Order book/Last trades right) - Simplified approach
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
-    let observer: MutationObserver | null = null;
     let attempts = 0;
-    const MAX_ATTEMPTS = 300; // Run for 30 seconds (300 * 100ms)
-
-    const forceHideElement = (htmlBox: HTMLElement, reason: string) => {
-      htmlBox.style.setProperty('display', 'none', 'important');
-      htmlBox.style.setProperty('visibility', 'hidden', 'important');
-      htmlBox.style.setProperty('width', '0', 'important');
-      htmlBox.style.setProperty('min-width', '0', 'important');
-      htmlBox.style.setProperty('max-width', '0', 'important');
-      htmlBox.style.setProperty('opacity', '0', 'important');
-      htmlBox.style.setProperty('pointer-events', 'none', 'important');
-      htmlBox.style.setProperty('position', 'absolute', 'important');
-      htmlBox.style.setProperty('overflow', 'hidden', 'important');
-      console.log('🚫 Hidden sidebar:', reason, htmlBox.textContent?.substring(0, 30));
-    };
+    const MAX_ATTEMPTS = 100; // 10 seconds (100 * 100ms)
 
     const hideSidebars = () => {
       attempts++;
 
-      // Strategy 1: Find all oui-box elements
+      // Find all oui-box elements within this wrapper
       const boxes = document.querySelectorAll('.multiscreen-trading-wrapper .oui-box');
 
       boxes.forEach((box) => {
@@ -42,154 +27,59 @@ export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewP
         const computedStyle = window.getComputedStyle(htmlBox);
         const width = parseInt(computedStyle.width);
 
-        // Check if it contains chart (should NOT hide)
+        // Protect chart (has iframe or canvas)
         const hasChart = htmlBox.querySelector('iframe') ||
-                        htmlBox.querySelector('[id^="tradingview_"]') ||
                         htmlBox.querySelector('canvas') ||
-                        htmlBox.querySelector('.tv-lightweight-charts');
+                        htmlBox.querySelector('[id^="tradingview_"]');
 
-        // Check if it contains positions panel (should NOT hide)
-        // Very comprehensive protection for positions/orders area
-        const hasPositions = htmlBox.querySelector('[role="tablist"]') ||
-                            htmlBox.querySelector('[role="tab"]') ||
-                            htmlBox.querySelector('table') ||
-                            htmlBox.querySelector('tbody') ||
-                            htmlBox.querySelector('thead') ||
-                            htmlBox.querySelector('tr') ||
-                            htmlBox.querySelector('td') ||
-                            htmlBox.querySelector('th') ||
-                            text.includes('Positions') ||
-                            text.includes('Pending') ||
-                            text.includes('Orders') ||
-                            text.includes('TP/SL') ||
-                            text.includes('Close all') ||
-                            text.includes('Unrealized') ||
-                            text.includes('PnL') ||
-                            text.includes('Filled') ||
-                            text.includes('Assets') ||
-                            text.includes('Liquidation') ||
-                            text.includes('Mark price') ||
-                            text.includes('Entry price') ||
-                            text.includes('Notional') ||
-                            text.includes('Symbol') ||
-                            text.includes('Qty') ||
-                            text.includes('Est.Liq.Price');
+        // Protect positions/orders panel (has table or tabs)
+        const hasPositionsPanel = htmlBox.querySelector('[role="tablist"]') ||
+                                 htmlBox.querySelector('table') ||
+                                 text.includes('Positions') ||
+                                 text.includes('Orders') ||
+                                 text.includes('TP/SL');
 
-        if (hasChart || hasPositions) {
-          return; // Don't hide chart or positions
+        if (hasChart || hasPositionsPanel) {
+          return; // Don't hide these
         }
 
-        // AGGRESSIVE DETECTION - Use OR logic, not AND
+        // Detect left sidebar (Markets)
+        const isLeftSidebar = text.includes('Markets') ||
+                             text.includes('Search market') ||
+                             htmlBox.querySelector('input[placeholder*="Search"]');
 
-        // Left sidebar detection (Markets)
-        const isLeftSidebar =
-          text.includes('Markets') ||
-          text.includes('Search market') ||
-          (text.includes('All') && text.includes('New listings')) ||
-          htmlBox.querySelector('input[placeholder*="Search"]') !== null;
+        // Detect right sidebar (Order book, Last trades)
+        const isRightSidebar = text.includes('Order book') ||
+                              text.includes('Last trades') ||
+                              (text.includes('Price') && text.includes('Amount'));
 
-        // Right sidebar detection (Order book, Last trades)
-        const isRightSidebar =
-          text.includes('Order book') ||
-          text.includes('Last trades') ||
-          text.includes('Orderbook') ||
-          text.includes('Bid') ||
-          text.includes('Ask') ||
-          (text.includes('Price') && text.includes('Amount')) ||
-          (text.includes('Price') && text.includes('Size')) ||
-          htmlBox.querySelector('[role="tab"][aria-label*="Order"]') !== null ||
-          htmlBox.querySelector('[role="tab"][aria-label*="trades"]') !== null;
+        // Also hide very narrow boxes at edges (likely sidebars)
+        const isNarrowEdgeBox = width > 0 && width < 400 &&
+                               (htmlBox.parentElement?.firstElementChild === htmlBox ||
+                                htmlBox.parentElement?.lastElementChild === htmlBox);
 
-        // Positional detection
-        const parent = htmlBox.parentElement;
-        const isFirstChild = parent?.firstElementChild === htmlBox;
-        const isLastChild = parent?.lastElementChild === htmlBox;
-
-        // Width-based detection (sidebars are typically narrow)
-        const isNarrowBox = width > 0 && width < 450;
-
-        // HIDE if matches ANY sidebar criteria
-        if (isLeftSidebar) {
-          forceHideElement(htmlBox, 'Left sidebar (Markets)');
-        } else if (isRightSidebar) {
-          forceHideElement(htmlBox, 'Right sidebar (Order book/Last trades)');
-        } else if (isNarrowBox && (isFirstChild || isLastChild)) {
-          forceHideElement(htmlBox, `Narrow ${isFirstChild ? 'first' : 'last'} child (${width}px)`);
+        // Hide if it's a sidebar
+        if (isLeftSidebar || isRightSidebar || isNarrowEdgeBox) {
+          htmlBox.style.setProperty('display', 'none', 'important');
+          htmlBox.style.setProperty('width', '0', 'important');
+          htmlBox.style.setProperty('min-width', '0', 'important');
+          htmlBox.style.setProperty('overflow', 'hidden', 'important');
+          htmlBox.style.setProperty('position', 'absolute', 'important');
         }
       });
 
-      // Strategy 2: Direct class-based hiding for known sidebar classes
-      const knownSidebarSelectors = [
-        '.multiscreen-trading-wrapper [class*="sidebar"]',
-        '.multiscreen-trading-wrapper [class*="Sidebar"]',
-        '.multiscreen-trading-wrapper [class*="markets"]',
-        '.multiscreen-trading-wrapper [class*="Markets"]',
-        '.multiscreen-trading-wrapper [class*="orderbook"]',
-        '.multiscreen-trading-wrapper [class*="Orderbook"]',
-      ];
-
-      knownSidebarSelectors.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
-          const htmlEl = el as HTMLElement;
-          if (!htmlEl.querySelector('iframe') && !htmlEl.querySelector('[role="tablist"]')) {
-            forceHideElement(htmlEl, `Class-based: ${selector}`);
-          }
-        });
-      });
-
-      // Strategy 3: Find containers with Order book/Last trades tabs and hide them
-      const allElements = document.querySelectorAll('.multiscreen-trading-wrapper *');
-      allElements.forEach(el => {
-        const htmlEl = el as HTMLElement;
-        const innerText = htmlEl.innerText || '';
-
-        // Check if this element contains Order book or Last trades tabs
-        const hasOrderBookTab = innerText.includes('Order book') && innerText.includes('Last trades');
-
-        if (hasOrderBookTab && !htmlEl.querySelector('iframe') && !htmlEl.querySelector('[role="tablist"]')) {
-          // This is likely the right sidebar container
-          forceHideElement(htmlEl, 'Container with Order book/Last trades tabs');
-        }
-      });
-
-      // Stop after MAX_ATTEMPTS
       if (attempts >= MAX_ATTEMPTS) {
         clearInterval(intervalId);
-        console.log('✅ Sidebar hiding complete after', attempts, 'attempts');
       }
     };
 
-    // Run immediately
-    hideSidebars();
+    // Initial run
+    setTimeout(hideSidebars, 100);
 
-    // Run continuously every 100ms for 30 seconds
-    intervalId = setInterval(hideSidebars, 100);
+    // Run periodically for 10 seconds
+    const intervalId = setInterval(hideSidebars, 100);
 
-    // Also use MutationObserver to catch dynamically added elements
-    observer = new MutationObserver(() => {
-      hideSidebars();
-    });
-
-    const wrapper = document.querySelector('.multiscreen-trading-wrapper');
-    if (wrapper) {
-      observer.observe(wrapper, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['style', 'class']
-      });
-    }
-
-    // Cleanup
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-      if (observer) {
-        observer.disconnect();
-      }
-    };
+    return () => clearInterval(intervalId);
   }, [symbol]);
 
   return (
