@@ -108,9 +108,21 @@
   height: 100%;
 }
 
-/* Conservative sidebar hiding - only hide elements without protected content */
+/* SURGICAL: Hide sidebars by exact inline width (from inspector analysis) */
 
-/* Hide first/last .oui-box that don't contain: iframe, canvas, tablist, OR table */
+/* Both Markets sidebar and Order book sidebar have exactly width: 280px inline */
+.multiscreen-trading-wrapper .oui-box[style*="width: 280px"] {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* Backup: Hide first/last .oui-box without protected content */
 .multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has(table)) {
   display: none !important;
   width: 0 !important;
