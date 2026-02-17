@@ -108,22 +108,89 @@
   height: 100%;
 }
 
-/* Let TradingPage handle table rendering naturally */
+/* ULTRA AGGRESSIVE: Hide sidebars with multiple strategies */
 
-/* AGGRESSIVE CSS BACKUP: Hide sidebars as fallback */
-/* Only hide first/last child if they don't contain chart, positions, or table data */
-.multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has([role="tab"])):not(:has(table)) {
+/* Strategy 1: Hide first/last .oui-box children that don't have protected content */
+/* Remove [role="tab"] protection - only protect [role="tablist"] (Positions tabs) */
+.multiscreen-trading-wrapper .oui-box:first-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has(table)) {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
   pointer-events: none !important;
 }
 
-.multiscreen-trading-wrapper .oui-box:last-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has([role="tab"])):not(:has(table)) {
+.multiscreen-trading-wrapper .oui-box:last-child:not(:has(iframe)):not(:has(canvas)):not(:has([role="tablist"])):not(:has(table)) {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
+  max-width: 0 !important;
   opacity: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
   pointer-events: none !important;
+}
+
+/* Strategy 2: Hide any .oui-box narrower than 400px at edges */
+.multiscreen-trading-wrapper > * > .oui-box:first-child {
+  max-width: 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+}
+
+.multiscreen-trading-wrapper > * > .oui-box:last-child:not(:has(table)) {
+  max-width: 0 !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  position: absolute !important;
+}
+
+/* Strategy 3: Target common sidebar class patterns */
+.multiscreen-trading-wrapper [class*="sidebar"],
+.multiscreen-trading-wrapper [class*="Sidebar"],
+.multiscreen-trading-wrapper [class*="market"],
+.multiscreen-trading-wrapper [class*="Market"]:not(:has(table)),
+.multiscreen-trading-wrapper [class*="orderbook"],
+.multiscreen-trading-wrapper [class*="Orderbook"],
+.multiscreen-trading-wrapper [class*="trades"]:not(:has([role="tablist"])) {
+  display: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Strategy 4: Hide elements with specific widths that are likely sidebars */
+.multiscreen-trading-wrapper .oui-box[style*="width: 180px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 200px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 220px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 240px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 260px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 280px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 300px"],
+.multiscreen-trading-wrapper .oui-box[style*="width: 320px"] {
+  display: none !important;
+  width: 0 !important;
+  max-width: 0 !important;
+}
+
+/* Strategy 5: Force grid layout to hide sidebars */
+.multiscreen-trading-wrapper .oui-trading-page {
+  display: grid !important;
+  grid-template-columns: 0fr 1fr 0fr !important;
+}
+
+.multiscreen-trading-wrapper .oui-trading-page > *:first-child {
+  grid-column: 2 !important;
+  max-width: none !important;
+}
+
+.multiscreen-trading-wrapper .oui-trading-page > *:last-child {
+  display: none !important;
 }
