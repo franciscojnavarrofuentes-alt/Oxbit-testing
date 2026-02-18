@@ -20,13 +20,10 @@ export const FundWalletButton = () => {
         return;
       }
 
-      // Get current chain ID from the wallet
-      const chainId = (embeddedWallet as any).chainId;
-
       // Call the fund method with configuration for USDC
+      // Do NOT pass chain parameter to avoid validation errors with Orderly SDK 2.9.1
       if (typeof (embeddedWallet as any).fund === 'function') {
         await (embeddedWallet as any).fund({
-          chain: chainId ? { id: chainId } : undefined,
           asset: 'USDC', // Default to USDC instead of ETH
         });
       } else {
