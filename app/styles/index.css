@@ -78,8 +78,9 @@
   pointer-events: none !important;
 }
 
-/* Markets sidebar container has width: 70px (parent of #oui-side-markets) */
-.custom-trading-view-wrapper .oui-box[style*="min-width: 70px"][style*="--oui-width: 70px"] {
+/* Markets sidebar - target by ID and parent container */
+.custom-trading-view-wrapper #oui-side-markets,
+.custom-trading-view-wrapper .oui-box[style*="--oui-width: 70px"] {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
