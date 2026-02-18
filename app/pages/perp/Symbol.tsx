@@ -38,12 +38,21 @@ export default function PerpSymbol() {
   return (
     <>
       {renderSEOTags(pageMeta, pageTitle)}
-      <TradingPage
-        symbol={symbol}
-        onSymbolChange={onSymbolChange}
-        tradingViewConfig={config.tradingPage.tradingViewConfig}
-        sharePnLConfig={config.tradingPage.sharePnLConfig}
-      />
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <TradingPage
+          symbol={symbol}
+          onSymbolChange={onSymbolChange}
+          tradingViewConfig={config.tradingPage.tradingViewConfig}
+          sharePnLConfig={config.tradingPage.sharePnLConfig}
+        />
+        <a
+          href="mailto:ads@pacryptodex.com"
+          className="ad-banner"
+        >
+          <span className="ad-banner-label">AD</span>
+          <span className="ad-banner-text">Advertise With Us</span>
+        </a>
+      </div>
     </>
   );
 }

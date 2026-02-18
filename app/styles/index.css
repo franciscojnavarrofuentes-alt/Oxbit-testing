@@ -92,3 +92,49 @@
   pointer-events: none !important;
 }
 
+/* Ad banner - bottom right of trading page */
+.ad-banner {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(var(--oui-color-base-8), 0.95);
+  border: 1px solid rgba(var(--oui-color-base-6), 1);
+  border-radius: var(--oui-rounded-lg);
+  color: rgba(var(--oui-color-base-foreground), 0.7);
+  text-decoration: none;
+  font-size: var(--oui-font-size-sm);
+  z-index: 10;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.ad-banner:hover {
+  border-color: rgba(var(--oui-color-primary), 0.5);
+  color: rgba(var(--oui-color-base-foreground), 1);
+}
+
+.ad-banner-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 6px;
+  background: rgba(var(--oui-color-primary), 0.2);
+  color: rgba(var(--oui-color-primary), 1);
+  border-radius: 4px;
+}
+
+.ad-banner-text {
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .ad-banner {
+    display: none;
+  }
+}
+
