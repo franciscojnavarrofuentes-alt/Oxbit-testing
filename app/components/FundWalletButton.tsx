@@ -1,33 +1,27 @@
-import { useWallets } from '@privy-io/react-auth';
+import { useWalletConnector } from '@orderly.network/hooks';
 import { useCallback, useState } from 'react';
 
 export const FundWalletButton = () => {
-  const { wallets } = useWallets();
+  const { wallet } = useWalletConnector();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFundWallet = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      // Find the Privy embedded wallet
-      const embeddedWallet = wallets.find(
-        (wallet) => (wallet as any).walletClientType === 'privy'
-      );
-
-      if (!embeddedWallet) {
-        console.error('No embedded wallet found');
-        alert('No embedded wallet found. Please connect your wallet first.');
+      if (!wallet) {
+        alert('Please connect your wallet first.');
         return;
       }
 
-      // Call the fund method - let MoonPay handle chain selection
-      if (typeof (embeddedWallet as any).fund === 'function') {
-        await (embeddedWallet as any).fund({
-          asset: 'USDC', // Default to USDC
+      // Call the fund method on the wallet - let MoonPay handle chain selection
+      if (typeof (wallet as any).fund === 'function') {
+        await (wallet as any).fund({
+          asset: 'USDC',
         });
       } else {
-        console.error('Fund method not available on wallet');
-        alert('Funding not available for this wallet');
+        console.error('Fund method not available on this wallet type');
+        alert('Funding is only available for Privy embedded wallets. Please connect using email/social login.');
       }
     } catch (error) {
       console.error('Error funding wallet:', error);
@@ -35,19 +29,10 @@ export const FundWalletButton = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [wallets]);
+  }, [wallet]);
 
-  // Only show button if there are wallets connected
-  if (!wallets || wallets.length === 0) {
-    return null;
-  }
-
-  // Check if there's an embedded wallet
-  const hasEmbeddedWallet = wallets.some(
-    (wallet) => (wallet as any).walletClientType === 'privy'
-  );
-
-  if (!hasEmbeddedWallet) {
+  // Only show button if wallet is connected
+  if (!wallet) {
     return null;
   }
 
