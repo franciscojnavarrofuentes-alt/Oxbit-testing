@@ -9,15 +9,19 @@ export const FundWalletButton = () => {
     try {
       setIsLoading(true);
 
-      if (!wallet) {
+      if (!wallet || !wallet.address) {
         alert('Please connect your wallet first.');
         return;
       }
 
-      // Call the fund method on the wallet - let MoonPay handle chain selection
+      // Call the fund method with address parameter (required by Privy)
+      // Let MoonPay handle chain selection by not specifying chain
       if (typeof (wallet as any).fund === 'function') {
         await (wallet as any).fund({
-          asset: 'USDC',
+          address: wallet.address,
+          options: {
+            asset: 'USDC',
+          }
         });
       } else {
         console.error('Fund method not available on this wallet type');
