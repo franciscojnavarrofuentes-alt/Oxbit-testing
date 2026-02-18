@@ -1,31 +1,37 @@
-import { useWalletConnector } from '@orderly.network/hooks';
+import { useWallets } from '@privy-io/react-auth';
 import { useCallback, useState } from 'react';
 
 export const FundWalletButton = () => {
-  const { wallet } = useWalletConnector();
+  const { wallets } = useWallets();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFundWallet = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      if (!wallet || !wallet.address) {
-        alert('Please connect your wallet first.');
+      // Find the Privy embedded wallet
+      const embeddedWallet = wallets.find(
+        (wallet) => (wallet as any).walletClientType === 'privy'
+      );
+
+      if (!embeddedWallet) {
+        console.error('No embedded wallet found');
+        alert('No embedded wallet found. Please connect your wallet first.');
         return;
       }
 
-      // Call the fund method with address parameter (required by Privy)
-      // Let MoonPay handle chain selection by not specifying chain
-      if (typeof (wallet as any).fund === 'function') {
-        await (wallet as any).fund({
-          address: wallet.address,
-          options: {
-            asset: 'USDC',
-          }
+      // Get current chain ID from the wallet
+      const chainId = (embeddedWallet as any).chainId;
+
+      // Call the fund method with configuration for USDC
+      if (typeof (embeddedWallet as any).fund === 'function') {
+        await (embeddedWallet as any).fund({
+          chain: chainId ? { id: chainId } : undefined,
+          asset: 'USDC', // Default to USDC instead of ETH
         });
       } else {
-        console.error('Fund method not available on this wallet type');
-        alert('Funding is only available for Privy embedded wallets. Please connect using email/social login.');
+        console.error('Fund method not available on wallet');
+        alert('Funding not available for this wallet');
       }
     } catch (error) {
       console.error('Error funding wallet:', error);
@@ -33,10 +39,19 @@ export const FundWalletButton = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [wallet]);
+  }, [wallets]);
 
-  // Only show button if wallet is connected
-  if (!wallet) {
+  // Only show button if there are wallets connected
+  if (!wallets || wallets.length === 0) {
+    return null;
+  }
+
+  // Check if there's an embedded wallet
+  const hasEmbeddedWallet = wallets.some(
+    (wallet) => (wallet as any).walletClientType === 'privy'
+  );
+
+  if (!hasEmbeddedWallet) {
     return null;
   }
 
