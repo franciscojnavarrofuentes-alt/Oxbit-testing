@@ -4,5 +4,6 @@
   "extend.affiliate.description": "Bir Orderly satış ortağı olarak daha fazla kazanın",
   "extend.staking": "Staking",
   "extend.staking.description": "VALOR kazanmak için ORDER/esORDER yatırın",
-  "extend.swap": "Takas"
+  "extend.swap": "Takas",
+  "extend.calendar": "Takvim"
 }

@@ -43,6 +43,8 @@ const MultiScreenLayout = lazy(() => import('./pages/multiscreen/Layout'));
 const MultiScreenIndex = lazy(() => import('./pages/multiscreen/Index'));
 const StakingLayout = lazy(() => import('./pages/staking/Layout'));
 const StakingIndex = lazy(() => import('./pages/staking/Index'));
+const CalendarLayout = lazy(() => import('./pages/calendar/Layout'));
+const CalendarIndex = lazy(() => import('./pages/calendar/Index'));
 
 
 async function loadRuntimeConfig() {
@@ -185,6 +187,13 @@ const router = createBrowserRouter([
         element: <StakingLayout />,
         children: [
           { index: true, element: <StakingIndex /> },
+        ],
+      },
+      {
+        path: 'calendar',
+        element: <CalendarLayout />,
+        children: [
+          { index: true, element: <CalendarIndex /> },
         ],
       },
     ],

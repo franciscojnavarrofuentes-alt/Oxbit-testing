@@ -89,6 +89,7 @@ const ALL_MENU_ITEMS = [
     translationKey: "tradingLeaderboard.leaderboard",
   },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+  { name: "Calendar", href: "/calendar", translationKey: "extend.calendar" },
 ];
 
 // Earn submenu items
@@ -112,6 +113,7 @@ const DEFAULT_ENABLED_MENUS = [
     translationKey: "tradingLeaderboard.leaderboard",
   },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+  { name: "Calendar", href: "/calendar", translationKey: "extend.calendar" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {

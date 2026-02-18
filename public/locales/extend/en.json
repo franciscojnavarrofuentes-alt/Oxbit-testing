@@ -8,5 +8,6 @@
   "extend.aggr": "Aggr",
   "extend.tapesurf": "TapeSurf",
   "extend.multiscreen": "Multi-screen",
-  "extend.earn": "Earn"
+  "extend.earn": "Earn",
+  "extend.calendar": "Calendar"
 }
