@@ -59,6 +59,17 @@ const PrivyConnector = ({ children, networkId }: {
               useSandbox: false,
             },
           },
+          supportedChains: [
+            { id: 1 },      // Ethereum
+            { id: 42161 },  // Arbitrum
+            { id: 56 },     // BSC
+            { id: 10 },     // Optimism
+            { id: 137 },    // Polygon
+            { id: 43114 },  // Avalanche
+            { id: 8453 },   // Base
+            { id: 5000 },   // Mantle
+            { id: 534352 }, // Scroll
+          ],
         },
         appid: appId,
       }}
