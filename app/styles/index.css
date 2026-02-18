@@ -78,11 +78,10 @@
   pointer-events: none !important;
 }
 
-/* Markets sidebar - target by ID, parent container, and any ancestor that contains it */
+/* Markets sidebar - target by ID and its direct parent container */
 .custom-trading-view-wrapper #oui-side-markets,
 .custom-trading-view-wrapper .oui-box[style*="--oui-width: 70px"],
-.custom-trading-view-wrapper .oui-box:has(> #oui-side-markets),
-.custom-trading-view-wrapper .oui-box:has(> .oui-box > #oui-side-markets) {
+.custom-trading-view-wrapper .oui-box:has(> #oui-side-markets) {
   display: none !important;
   width: 0 !important;
   min-width: 0 !important;
