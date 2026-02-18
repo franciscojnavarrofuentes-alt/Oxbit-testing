@@ -40,17 +40,6 @@ const PrivyConnector = ({ children, networkId }: {
     <WalletConnectorPrivyProvider
       network={networkId === 'mainnet' ? Network.mainnet : Network.testnet}
       termsOfUse={termsOfUseUrl}
-      customChains={[
-        { id: 1, name: 'Ethereum' },
-        { id: 42161, name: 'Arbitrum' },
-        { id: 56, name: 'BSC' },
-        { id: 10, name: 'Optimism' },
-        { id: 137, name: 'Polygon' },
-        { id: 43114, name: 'Avalanche' },
-        { id: 8453, name: 'Base' },
-        { id: 5000, name: 'Mantle' },
-        { id: 534352, name: 'Scroll' },
-      ]}
       wagmiConfig={disableEVMWallets ? undefined : {
         connectors: getEvmConnectors()
       }}
