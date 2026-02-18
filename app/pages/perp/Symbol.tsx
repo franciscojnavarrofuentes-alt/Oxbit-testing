@@ -49,8 +49,8 @@ export default function PerpSymbol() {
           href="mailto:ads@pacryptodex.com"
           className="ad-banner"
         >
-          <span className="ad-banner-label">AD</span>
-          <span className="ad-banner-text">Advertise With Us</span>
+          <span className="ad-banner-text">ADVERTISE</span>
+          <span className="ad-banner-text">HERE !!</span>
         </a>
       </div>
     </>
