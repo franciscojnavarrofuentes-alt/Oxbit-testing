@@ -18,7 +18,7 @@ export default function StakingIndex() {
     (async () => {
       try {
         // Use the bundle version to avoid React context conflicts
-        await import("@stakekit/widget/bundle/css");
+        await import("@stakekit/widget/style.css");
         const { renderSKWidget, darkTheme } = await import("@stakekit/widget/bundle");
 
         const { unmount } = renderSKWidget({
