@@ -9,8 +9,14 @@ export default function StakingIndex() {
   return (
     <>
       {renderSEOTags(pageMeta, pageTitle)}
-      <div className="flex items-center justify-center" style={{ minHeight: "calc(100vh - 60px)" }}>
-        <p className="text-white/60">Coming soon.</p>
+      <div className="w-full h-full">
+        <iframe
+          src="https://dapp.stakek.it/"
+          className="w-full h-full border-0"
+          style={{ minHeight: "calc(100vh - 60px)" }}
+          title="Staking & DeFi Yields"
+          allow="clipboard-write"
+        />
       </div>
     </>
   );
