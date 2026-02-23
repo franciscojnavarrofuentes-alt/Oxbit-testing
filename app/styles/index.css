@@ -50,26 +50,12 @@
   }
 }
 
-/* Custom Trading View Wrapper - Uses full TradingPage */
+/* Custom Trading View Wrapper - matches Trade page wrapper (position: relative) */
 .custom-trading-view-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
-
-.custom-trading-view-wrapper .oui-trading-page {
-  width: 100%;
-  height: 100%;
-}
-
-/* Force chart area to fill space after hiding sidebars */
-.custom-trading-view-wrapper .oui-trading-page > div {
-  max-width: 100% !important;
-}
-
-.custom-trading-view-wrapper .w-split-pane-container {
-  width: 100% !important;
-  max-width: 100% !important;
 }
 
 /* SURGICAL: Hide sidebars by specific Orderly UI classes and IDs (from HTML analysis) */
