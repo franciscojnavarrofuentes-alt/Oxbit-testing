@@ -58,32 +58,39 @@
   overflow: hidden;
 }
 
-/* === MULTISCREEN: Override TradingPage hardcoded sizes === */
+/* === MULTISCREEN: Force TradingPage to fit panel width === */
 
-/* 1. Main container has min-width: 1018px and height: calc(100vh - 77px)
-      Override both so it fits the grid cell instead of overflowing */
+/* Intermediate .oui-box has no explicit width — force it to match wrapper */
+.custom-trading-view-wrapper > .oui-box {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Main .w-split container: force to 100% of parent, override all size constraints */
 .custom-trading-view-wrapper > .oui-box > .w-split {
+  width: 100% !important;
+  max-width: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
   height: 100% !important;
   max-height: 100% !important;
 }
 
-/* 2. All split panes/containers: remove min-width/min-height constraints */
+/* All split panes/containers: allow shrinking, cap at 100% parent width */
 .custom-trading-view-wrapper .w-split,
 .custom-trading-view-wrapper .w-split-pane {
   min-width: 0 !important;
   min-height: 0 !important;
+  max-width: 100% !important;
 }
 
-/* 3. Main content column has width: calc(100% - 280px - 12px) to make room
-      for the orderbook sidebar. Since we hide that sidebar, use full width */
+/* Content column: uses calc(100% - 280px - 12px) for hidden orderbook → use full width */
 .custom-trading-view-wrapper .w-split-pane > .oui-box.oui-flex-col.oui-flex-1 {
   width: 100% !important;
 }
 
-/* 4. Chart area has width: calc(100% - 70px) to make room for the markets
-      sidebar. Since we hide that sidebar, use full width */
+/* Chart area: uses calc(100% - 70px) for hidden markets sidebar → use full width */
 .custom-trading-view-wrapper [style*="width: calc(100% - 70px)"] {
   width: 100% !important;
 }
