@@ -18,25 +18,13 @@
   gap: 8px;
   padding: 4px;
   height: calc(100vh - 60px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .multiscreen-chart-panel {
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  min-width: 0;
-}
-
-.multiscreen-trading-wrapper {
-  flex: 1;
   overflow: hidden;
-  position: relative;
-  width: 100%;
-  height: 100%;
+  min-width: 0;
 }
 
 /* Responsive: Stack vertically on smaller screens */
@@ -52,20 +40,17 @@
   }
 }
 
-/* Custom Trading View Wrapper - matches Trade page wrapper (position: relative) */
+/* Custom Trading View Wrapper */
 .custom-trading-view-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* === MULTISCREEN: Force TradingPage to fit panel width === */
 
-/* Brute force: constrain ALL descendants at every level.
-   The TradingPage renders at ~1400px inside a ~908px panel.
-   We must force every element in the chain to respect parent width. */
+/* Width containment: force all descendants to respect parent width */
 .custom-trading-view-wrapper > *,
 .custom-trading-view-wrapper > * > *,
 .custom-trading-view-wrapper > * > * > * {
@@ -74,21 +59,28 @@
   overflow-x: hidden !important;
 }
 
-/* First child and main split: force explicit width + height */
+/* First child: fill wrapper completely */
 .custom-trading-view-wrapper > * {
   width: 100% !important;
   height: 100% !important;
 }
+
+/* Second level (main split container): fit within panel height */
 .custom-trading-view-wrapper > * > * {
   width: 100% !important;
-  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
 }
 
-/* All split panes: allow shrinking */
-.custom-trading-view-wrapper .w-split,
+/* Split containers: allow width shrinking, keep natural height behavior */
+.custom-trading-view-wrapper .w-split {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Split panes: allow width shrinking but KEEP min-height for proper proportions */
 .custom-trading-view-wrapper .w-split-pane {
   min-width: 0 !important;
-  min-height: 0 !important;
   max-width: 100% !important;
 }
 
