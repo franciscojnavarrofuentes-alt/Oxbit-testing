@@ -58,33 +58,48 @@
   overflow: hidden;
 }
 
-/* SURGICAL: Hide sidebars by specific Orderly UI classes and IDs (from HTML analysis) */
+/* === MULTISCREEN: Override TradingPage hardcoded sizes === */
 
-/* Order book sidebar uses w-split-pane class with width: 280px */
-/* Positions panel also has w-split-pane but with height: 350px, so we target by width */
-.custom-trading-view-wrapper .oui-box.w-split-pane[style*="width: 280px"] {
-  display: none !important;
-  width: 0 !important;
+/* 1. Main container has min-width: 1018px and height: calc(100vh - 77px)
+      Override both so it fits the grid cell instead of overflowing */
+.custom-trading-view-wrapper > .oui-box > .w-split {
   min-width: 0 !important;
-  max-width: 0 !important;
-  opacity: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  pointer-events: none !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
 }
 
-/* Markets sidebar - target by ID and its direct parent container */
+/* 2. All split panes/containers: remove min-width/min-height constraints */
+.custom-trading-view-wrapper .w-split,
+.custom-trading-view-wrapper .w-split-pane {
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* 3. Main content column has width: calc(100% - 280px - 12px) to make room
+      for the orderbook sidebar. Since we hide that sidebar, use full width */
+.custom-trading-view-wrapper .w-split-pane > .oui-box.oui-flex-col.oui-flex-1 {
+  width: 100% !important;
+}
+
+/* 4. Chart area has width: calc(100% - 70px) to make room for the markets
+      sidebar. Since we hide that sidebar, use full width */
+.custom-trading-view-wrapper [style*="width: calc(100% - 70px)"] {
+  width: 100% !important;
+}
+
+/* === MULTISCREEN: Hide sidebars === */
+
+/* Order book sidebar (280px wide split pane) */
+.custom-trading-view-wrapper .oui-box.w-split-pane[style*="width: 280px"] {
+  display: none !important;
+}
+
+/* Markets sidebar (70px) and its container */
 .custom-trading-view-wrapper #oui-side-markets,
 .custom-trading-view-wrapper .oui-box[style*="--oui-width: 70px"],
 .custom-trading-view-wrapper .oui-box:has(> #oui-side-markets) {
   display: none !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  max-width: 0 !important;
-  opacity: 0 !important;
-  overflow: hidden !important;
-  position: absolute !important;
-  pointer-events: none !important;
 }
 
 
