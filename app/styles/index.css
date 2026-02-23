@@ -60,24 +60,30 @@
 
 /* === MULTISCREEN: Force TradingPage to fit panel width === */
 
-/* Intermediate .oui-box has no explicit width — force it to match wrapper */
-.custom-trading-view-wrapper > .oui-box {
-  width: 100% !important;
+/* Brute force: constrain ALL descendants at every level.
+   The TradingPage renders at ~1400px inside a ~908px panel.
+   We must force every element in the chain to respect parent width. */
+.custom-trading-view-wrapper > *,
+.custom-trading-view-wrapper > * > *,
+.custom-trading-view-wrapper > * > * > * {
   max-width: 100% !important;
+  min-width: 0 !important;
   overflow: hidden !important;
 }
 
-/* Main .w-split container: force to 100% of parent, override all size constraints */
-.custom-trading-view-wrapper > .oui-box > .w-split {
+/* First child and main split: force explicit width + height */
+.custom-trading-view-wrapper > * {
   width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
   height: 100% !important;
+}
+.custom-trading-view-wrapper > * > * {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
   max-height: 100% !important;
 }
 
-/* All split panes/containers: allow shrinking, cap at 100% parent width */
+/* All split panes: allow shrinking */
 .custom-trading-view-wrapper .w-split,
 .custom-trading-view-wrapper .w-split-pane {
   min-width: 0 !important;
@@ -85,12 +91,12 @@
   max-width: 100% !important;
 }
 
-/* Content column: uses calc(100% - 280px - 12px) for hidden orderbook → use full width */
+/* Content column: remove 280px deduction for hidden orderbook sidebar */
 .custom-trading-view-wrapper .w-split-pane > .oui-box.oui-flex-col.oui-flex-1 {
   width: 100% !important;
 }
 
-/* Chart area: uses calc(100% - 70px) for hidden markets sidebar → use full width */
+/* Chart area: remove 70px deduction for hidden markets sidebar */
 .custom-trading-view-wrapper [style*="width: calc(100% - 70px)"] {
   width: 100% !important;
 }
