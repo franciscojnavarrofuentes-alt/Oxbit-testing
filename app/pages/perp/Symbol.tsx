@@ -45,13 +45,6 @@ export default function PerpSymbol() {
           tradingViewConfig={config.tradingPage.tradingViewConfig}
           sharePnLConfig={config.tradingPage.sharePnLConfig}
         />
-        <a
-          href="mailto:ads@pacryptodex.com"
-          className="ad-banner"
-        >
-          <span className="ad-banner-text">ADVERTISE</span>
-          <span className="ad-banner-text">HERE !!</span>
-        </a>
       </div>
     </>
   );
