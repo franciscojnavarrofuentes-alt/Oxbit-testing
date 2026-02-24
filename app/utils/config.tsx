@@ -70,7 +70,7 @@ export type OrderlyConfig = {
 // Individual menu items (without Earn submenu items for flat list)
 const ALL_MENU_ITEMS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
+  { name: "Spot", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
@@ -102,7 +102,7 @@ const EARN_SUBMENU_ITEMS = [
 
 const DEFAULT_ENABLED_MENUS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
-  { name: "Swap", href: "/swap", translationKey: "extend.swap" },
+  { name: "Spot", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
   { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },

@@ -8,7 +8,7 @@ const WooFiWidget = lazy(() => import("@/components/WooFiWidget"));
 
 export default function SwapIndex() {
   const pageMeta = getPageMeta();
-  const pageTitle = generatePageTitle("Swap");
+  const pageTitle = generatePageTitle("Spot");
 
   return (
     <>

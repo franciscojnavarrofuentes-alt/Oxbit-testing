@@ -4,6 +4,6 @@
   "extend.affiliate.description": "成为 Orderly 合作伙伴，赚取更多收益",
   "extend.staking": "质押",
   "extend.staking.description": "质押 ORDER/esORDER 以获取 VALOR",
-  "extend.swap": "兑换",
+  "extend.swap": "Spot",
   "extend.calendar": "日历"
 }
