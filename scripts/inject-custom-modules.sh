@@ -25,14 +25,15 @@ patch_config_tsx() {
   python3 "$SCRIPT_DIR/patch_config.py" "$F" "$MARKER"
 }
 
-# 3. index.css
+# 3. index.css - insert import BEFORE @tailwind (not at end of file)
 patch_index_css() {
   local F="$PROJECT_ROOT/app/styles/index.css"
   has_marker "$F" && { echo "   ✅ index.css already patched"; return; }
   echo "   📝 Patching index.css..."
-  echo "" >> "$F"
-  echo "/* $MARKER - Custom styles */" >> "$F"
-  echo "@import '../custom/styles/custom.css';" >> "$F"
+  sed -i '' "/@tailwind base;/i\\
+/* $MARKER - Custom styles */\\
+@import '../custom/styles/custom.css';\\
+" "$F"
 }
 
 # 4. privyConnector.tsx
