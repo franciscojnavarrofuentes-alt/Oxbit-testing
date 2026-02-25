@@ -29,15 +29,19 @@ import {
 } from "./runtime-config";
 import { Link } from "react-router-dom";
 import CustomLeftNav from "@/components/CustomLeftNav";
-// @PACODEX_CUSTOM - Custom imports
-import { FundWalletButton } from "@/custom/components/FundWalletButton";
-import { createLiquidationLevelsIndicator } from "@/custom/indicators/liquidationLevels";
+import { FundWalletButton } from "@/components/FundWalletButton";
+import { createLiquidationLevelsIndicator } from "@/indicators/liquidationLevels";
 
 interface MainNavItem {
   name: string;
   href: string;
   target?: string;
-  children?: Array<{ name: string; href: string; description?: string; target?: string; }>;  // @PACODEX_CUSTOM
+  children?: Array<{
+    name: string;
+    href: string;
+    description?: string;
+    target?: string;
+  }>;
 }
 
 interface ColorConfigInterface {
@@ -63,32 +67,32 @@ export type OrderlyConfig = {
   };
 };
 
+// Individual menu items (without Earn submenu items for flat list)
 const ALL_MENU_ITEMS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
+  { name: "Spot", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Spot", href: "/swap", translationKey: "extend.swap" },  // @PACODEX_CUSTOM renamed
+  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
+  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
+  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   {
     name: "Rewards",
     href: "/rewards",
     translationKey: "tradingRewards.rewards",
   },
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   {
     name: "Leaderboard",
     href: "/leaderboard",
     translationKey: "tradingLeaderboard.leaderboard",
   },
-  { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
-  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
-  // @PACODEX_CUSTOM - Custom menu items
-  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
-  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
-  { name: "Staking", href: "/staking", translationKey: "extend.staking" },
   { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
   { name: "Calendar", href: "/calendar", translationKey: "extend.calendar" },
 ];
 
-// @PACODEX_CUSTOM - Earn submenu
+// Earn submenu items
 const EARN_SUBMENU_ITEMS = [
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Staking", href: "/staking", translationKey: "extend.staking" },
@@ -98,14 +102,18 @@ const EARN_SUBMENU_ITEMS = [
 
 const DEFAULT_ENABLED_MENUS = [
   { name: "Trading", href: "/", translationKey: "common.trading" },
+  { name: "Spot", href: "/swap", translationKey: "extend.swap" },
   { name: "Portfolio", href: "/portfolio", translationKey: "common.portfolio" },
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
-  { name: "Spot", href: "/swap", translationKey: "extend.swap" },  // @PACODEX_CUSTOM renamed
+  { name: "Aggr", href: "/aggr", translationKey: "extend.aggr" },
+  { name: "TapeSurf", href: "/tapesurf", translationKey: "extend.tapesurf" },
   {
     name: "Leaderboard",
     href: "/leaderboard",
     translationKey: "tradingLeaderboard.leaderboard",
   },
+  { name: "Multi-screen", href: "/multiscreen", translationKey: "extend.multiscreen" },
+  { name: "Calendar", href: "/calendar", translationKey: "extend.calendar" },
 ];
 
 const getCustomMenuItems = (): MainNavItem[] => {
@@ -280,7 +288,7 @@ export const useOrderlyConfig = () => {
       href: menu.href,
     }));
 
-    // @PACODEX_CUSTOM - Earn submenu integration
+    // Build Earn menu with submenu items
     const earnMenu: MainNavItem = {
       name: "Earn",
       href: "#",
@@ -290,11 +298,14 @@ export const useOrderlyConfig = () => {
         description: t(item.translationKey),
       })),
     };
+
+    // Insert Earn menu after Markets (position 4)
     const menusWithEarn = [
-      ...translatedEnabledMenus.slice(0, 4),
+      ...translatedEnabledMenus.slice(0, 4), // Trading, Swap, Portfolio, Markets
       earnMenu,
-      ...translatedEnabledMenus.slice(4),
+      ...translatedEnabledMenus.slice(4), // Aggr, TapeSurf, Leaderboard, Multi-screen
     ];
+
     const allMenuItems = [...menusWithEarn, ...customMenus];
 
     const supportedBottomNavMenus = [
@@ -367,7 +378,7 @@ export const useOrderlyConfig = () => {
 
           <Flex itemAlign={"center"} className="oui-gap-2">
             {components.accountSummary}
-            <FundWalletButton />  {/* @PACODEX_CUSTOM */}
+            <FundWalletButton />
             {components.linkDevice}
             {components.scanQRCode}
             {components.languageSwitcher}
@@ -431,7 +442,7 @@ export const useOrderlyConfig = () => {
           library_path: withBasePath("/tradingview/charting_library/"),
           customCssUrl: withBasePath("/tradingview/chart.css"),
           colorConfig: getColorConfig(),
-          customIndicatorsGetter: (PineJS: any) => Promise.resolve([createLiquidationLevelsIndicator(PineJS)]),  // @PACODEX_CUSTOM
+          customIndicatorsGetter: (PineJS: any) => Promise.resolve([createLiquidationLevelsIndicator(PineJS)]),
         },
         sharePnLConfig: {
           backgroundImages: getPnLBackgroundImages(),

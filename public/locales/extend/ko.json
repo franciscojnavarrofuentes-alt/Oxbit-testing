@@ -7,9 +7,5 @@
   "extend.staking": "스테이킹",
   "extend.staking.description": "ORDER/esORDER 스테이킹으로 VALOR 획득",
   "extend.swap": "Spot",
-  "extend.aggr": "Aggr",
-  "extend.tapesurf": "TapeSurf",
-  "extend.multiscreen": "Multi-screen",
-  "extend.earn": "Earn",
-  "extend.calendar": "Calendar"
+  "extend.calendar": "캘린더"
 }

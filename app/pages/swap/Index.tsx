@@ -8,7 +8,7 @@ const WooFiWidget = lazy(() => import("@/components/WooFiWidget"));
 
 export default function SwapIndex() {
   const pageMeta = getPageMeta();
-  const pageTitle = generatePageTitle("Spot") // @PACODEX_CUSTOM;
+  const pageTitle = generatePageTitle("Spot");
 
   return (
     <>

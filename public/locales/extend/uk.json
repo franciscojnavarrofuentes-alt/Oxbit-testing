@@ -5,9 +5,5 @@
   "extend.staking": "Стейкінг",
   "extend.staking.description": "Ставте ORDER/esORDER, щоб отримати VALOR",
   "extend.swap": "Spot",
-  "extend.aggr": "Aggr",
-  "extend.tapesurf": "TapeSurf",
-  "extend.multiscreen": "Multi-screen",
-  "extend.earn": "Earn",
-  "extend.calendar": "Calendar"
+  "extend.calendar": "Календар"
 }

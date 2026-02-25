@@ -3,7 +3,7 @@ import { API } from "@orderly.network/types";
 import { generatePageTitle } from "@/utils/utils";
 import { getPageMeta } from "@/utils/seo";
 import { renderSEOTags } from "@/utils/seo-tags";
-import { getMultiScreenSymbol, updateMultiScreenSymbol } from "@/custom/storage";
+import { getMultiScreenSymbol, updateMultiScreenSymbol } from "@/utils/storage";
 import { CustomTradingView } from "./CustomTradingView";
 
 export default function MultiScreenIndex() {
