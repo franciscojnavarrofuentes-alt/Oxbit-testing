@@ -38,14 +38,12 @@ export default function PerpSymbol() {
   return (
     <>
       {renderSEOTags(pageMeta, pageTitle)}
-      <div style={{ position: "relative", width: "100%", height: "100%" }}>
-        <TradingPage
-          symbol={symbol}
-          onSymbolChange={onSymbolChange}
-          tradingViewConfig={config.tradingPage.tradingViewConfig}
-          sharePnLConfig={config.tradingPage.sharePnLConfig}
-        />
-      </div>
+      <TradingPage
+        symbol={symbol}
+        onSymbolChange={onSymbolChange}
+        tradingViewConfig={config.tradingPage.tradingViewConfig}
+        sharePnLConfig={config.tradingPage.sharePnLConfig}
+      />
     </>
   );
 }

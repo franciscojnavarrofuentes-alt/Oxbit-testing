@@ -5,5 +5,9 @@
   "extend.staking": "Ставки",
   "extend.staking.description": "Ставка ORDER/esORDER для приобретения VALOR",
   "extend.swap": "Spot",
-  "extend.calendar": "Календарь"
+  "extend.aggr": "Aggr",
+  "extend.tapesurf": "TapeSurf",
+  "extend.multiscreen": "Multi-screen",
+  "extend.earn": "Earn",
+  "extend.calendar": "Calendar"
 }

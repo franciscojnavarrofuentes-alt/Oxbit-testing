@@ -35,16 +35,18 @@ const SwapLayout = lazy(() => import('./pages/swap/Layout'));
 const SwapIndex = lazy(() => import('./pages/swap/Index'));
 const PointsLayout = lazy(() => import('./pages/points/Layout'));
 const PointsIndex = lazy(() => import('./pages/points/Index'));
-const AggrLayout = lazy(() => import('./pages/aggr/Layout'));
-const AggrIndex = lazy(() => import('./pages/aggr/Index'));
-const TapeSurfLayout = lazy(() => import('./pages/tapesurf/Layout'));
-const TapeSurfIndex = lazy(() => import('./pages/tapesurf/Index'));
-const MultiScreenLayout = lazy(() => import('./pages/multiscreen/Layout'));
-const MultiScreenIndex = lazy(() => import('./pages/multiscreen/Index'));
-const StakingLayout = lazy(() => import('./pages/staking/Layout'));
-const StakingIndex = lazy(() => import('./pages/staking/Index'));
-const CalendarLayout = lazy(() => import('./pages/calendar/Layout'));
-const CalendarIndex = lazy(() => import('./pages/calendar/Index'));
+
+// @PACODEX_CUSTOM - Custom module imports
+const AggrLayout = lazy(() => import('./custom/pages/aggr/Layout'));
+const AggrIndex = lazy(() => import('./custom/pages/aggr/Index'));
+const TapeSurfLayout = lazy(() => import('./custom/pages/tapesurf/Layout'));
+const TapeSurfIndex = lazy(() => import('./custom/pages/tapesurf/Index'));
+const MultiScreenLayout = lazy(() => import('./custom/pages/multiscreen/Layout'));
+const MultiScreenIndex = lazy(() => import('./custom/pages/multiscreen/Index'));
+const StakingLayout = lazy(() => import('./custom/pages/staking/Layout'));
+const StakingIndex = lazy(() => import('./custom/pages/staking/Index'));
+const CalendarLayout = lazy(() => import('./custom/pages/calendar/Layout'));
+const CalendarIndex = lazy(() => import('./custom/pages/calendar/Index'));
 
 
 async function loadRuntimeConfig() {
@@ -161,6 +163,7 @@ const router = createBrowserRouter([
           { index: true, element: <PointsIndex /> },
         ],
       },
+      // @PACODEX_CUSTOM - Custom routes
       {
         path: 'aggr',
         element: <AggrLayout />,

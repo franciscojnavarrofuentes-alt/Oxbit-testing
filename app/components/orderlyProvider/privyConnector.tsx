@@ -50,6 +50,7 @@ const PrivyConnector = ({ children, networkId }: {
             showWalletLoginFirst: false,
           },
           loginMethods: loginMethods,
+          // @PACODEX_CUSTOM - Embedded wallet & funding config
           embeddedWallets: {
             createOnLogin: 'users-without-wallets',
             showWalletUIs: true,

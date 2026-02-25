@@ -5,5 +5,9 @@
   "extend.staking": "质押",
   "extend.staking.description": "质押 ORDER/esORDER 以获取 VALOR",
   "extend.swap": "Spot",
-  "extend.calendar": "日历"
+  "extend.aggr": "Aggr",
+  "extend.tapesurf": "TapeSurf",
+  "extend.multiscreen": "Multi-screen",
+  "extend.earn": "Earn",
+  "extend.calendar": "Calendar"
 }

@@ -5,5 +5,9 @@
   "extend.staking": "Staking",
   "extend.staking.description": "Stake ORDER/esORDER to acquire VALOR",
   "extend.swap": "Spot",
-  "extend.calendar": "Kalendarz"
+  "extend.aggr": "Aggr",
+  "extend.tapesurf": "TapeSurf",
+  "extend.multiscreen": "Multi-screen",
+  "extend.earn": "Earn",
+  "extend.calendar": "Calendar"
 }

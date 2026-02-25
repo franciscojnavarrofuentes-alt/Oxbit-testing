@@ -5,5 +5,9 @@
   "extend.staking": "Staking",
   "extend.staking.description": "VALOR kazanmak için ORDER/esORDER yatırın",
   "extend.swap": "Spot",
-  "extend.calendar": "Takvim"
+  "extend.aggr": "Aggr",
+  "extend.tapesurf": "TapeSurf",
+  "extend.multiscreen": "Multi-screen",
+  "extend.earn": "Earn",
+  "extend.calendar": "Calendar"
 }
