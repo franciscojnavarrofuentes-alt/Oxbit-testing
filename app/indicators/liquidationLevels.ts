@@ -29,7 +29,7 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
           linestyle: 2,
           linewidth: 1,
           plottype: 0,
-          trackPrice: false,
+          trackPrice: true,
           transparency: 20,
           color: '#FF4444',
         },
