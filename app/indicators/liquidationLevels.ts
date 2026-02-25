@@ -1,14 +1,15 @@
-// Liquidation Levels Custom Indicator for TradingView
-// Shows 10x leverage liquidation levels
+// Liquidation Price Indicator for TradingView
+// Shows the real liquidation price of the user's open position
+// Reads position data from window.__PACODEX_LIQ__ (set by Symbol.tsx)
 
 export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
-  name: 'Liquidation Levels',
+  name: 'Liquidation Price',
   metainfo: {
     _metainfoVersion: 51,
     id: 'LiquidationLevels@tv-basicstudies-1',
-    name: 'Liquidation Levels',
-    description: 'Shows liquidation levels for 10x leverage positions',
-    shortDescription: 'Liq Levels',
+    name: 'Liquidation Price',
+    description: 'Shows liquidation price of your open position',
+    shortDescription: 'Liq Price',
 
     is_price_study: true,
     isCustomIndicator: true,
@@ -19,27 +20,18 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
     },
 
     plots: [
-      { id: 'long_liq', type: 'line' },
-      { id: 'short_liq', type: 'line' },
+      { id: 'liq_price', type: 'line' },
     ],
 
     defaults: {
       styles: {
-        long_liq: {
-          linestyle: 0,
+        liq_price: {
+          linestyle: 2,
           linewidth: 2,
           plottype: 2,
-          trackPrice: false,
-          transparency: 30,
+          trackPrice: true,
+          transparency: 20,
           color: '#FF4444',
-        },
-        short_liq: {
-          linestyle: 0,
-          linewidth: 2,
-          plottype: 2,
-          trackPrice: false,
-          transparency: 30,
-          color: '#4ECDC4',
         },
       },
       precision: 2,
@@ -47,12 +39,8 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
     },
 
     styles: {
-      long_liq: {
-        title: 'Long Liq 10x',
-        histogramBase: 0,
-      },
-      short_liq: {
-        title: 'Short Liq 10x',
+      liq_price: {
+        title: 'Liq Price',
         histogramBase: 0,
       },
     },
@@ -70,16 +58,9 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
       (this as any)._context = context;
       (this as any)._input = inputCallback;
 
-      // Get close price using PineJS standard library
-      const closePrice = PineJS.Std.close((this as any)._context);
-
-      // Calculate liquidation levels for 10x leverage
-      // Long liquidation: -10.5% (10% leverage + 0.5% fee)
-      // Short liquidation: +10.5% (10% leverage + 0.5% fee)
-      const longLiq = closePrice * 0.895;  // -10.5%
-      const shortLiq = closePrice * 1.105; // +10.5%
-
-      return [longLiq, shortLiq];
+      const liqData = (window as any).__PACODEX_LIQ__;
+      if (!liqData || !liqData.est_liq_price) return [NaN];
+      return [liqData.est_liq_price];
     };
   },
 });
