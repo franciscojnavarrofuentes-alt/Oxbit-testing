@@ -3,13 +3,13 @@
 // Reads position data from window.__PACODEX_LIQ__ (set by Symbol.tsx)
 
 export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
-  name: 'Liquidation Price',
+  name: 'Liq. Price',
   metainfo: {
     _metainfoVersion: 51,
     id: 'LiquidationLevels@tv-basicstudies-1',
-    name: 'Liquidation Price',
+    name: 'Liq. Price',
     description: 'Shows liquidation price of your open position',
-    shortDescription: 'Liq Price',
+    shortDescription: 'Liq. Price',
 
     is_price_study: true,
     isCustomIndicator: true,
@@ -27,9 +27,9 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
       styles: {
         liq_price: {
           linestyle: 2,
-          linewidth: 2,
-          plottype: 2,
-          trackPrice: true,
+          linewidth: 1,
+          plottype: 0,
+          trackPrice: false,
           transparency: 20,
           color: '#FF4444',
         },
@@ -40,7 +40,7 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
 
     styles: {
       liq_price: {
-        title: 'Liq Price',
+        title: 'Liq. Price',
         histogramBase: 0,
       },
     },
