@@ -58,6 +58,17 @@ export const createLiquidationLevelsIndicator = (PineJS: any): any => ({
       (this as any)._context = context;
       (this as any)._input = inputCallback;
 
+      // Try symbol-keyed map first (supports multiscreen with multiple charts)
+      const liqMap = (window as any).__PACODEX_LIQ_MAP__;
+      if (liqMap) {
+        try {
+          const ticker = (this as any)._context.symbol.info.name || '';
+          const data = liqMap[ticker];
+          if (data && data.est_liq_price) return [data.est_liq_price];
+        } catch (e) { /* fall through */ }
+      }
+
+      // Fallback to single global (Trade page)
       const liqData = (window as any).__PACODEX_LIQ__;
       if (!liqData || !liqData.est_liq_price) return [NaN];
       return [liqData.est_liq_price];

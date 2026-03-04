@@ -23,20 +23,25 @@ export default function PerpSymbol() {
 
   // Feed position liquidation price to TradingView indicator via window global
   useEffect(() => {
+    const map = ((window as any).__PACODEX_LIQ_MAP__ ??= {});
     const position = rows?.[0];
     if (position && position.est_liq_price) {
-      (window as any).__PACODEX_LIQ__ = {
+      const data = {
         est_liq_price: position.est_liq_price,
         position_qty: position.position_qty,
         symbol: position.symbol,
       };
+      (window as any).__PACODEX_LIQ__ = data;
+      map[symbol] = data;
     } else {
       (window as any).__PACODEX_LIQ__ = null;
+      delete map[symbol];
     }
     return () => {
       (window as any).__PACODEX_LIQ__ = null;
+      delete map[symbol];
     };
-  }, [rows]);
+  }, [rows, symbol]);
 
   const onSymbolChange = useCallback(
     (data: API.Symbol) => {
