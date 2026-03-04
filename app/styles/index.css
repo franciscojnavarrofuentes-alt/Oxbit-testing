@@ -23,7 +23,8 @@
 
 .multiscreen-chart-panel {
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   min-width: 0;
 }
 
@@ -45,7 +46,8 @@
   position: relative;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* === MULTISCREEN: Force TradingPage to fit panel width === */
@@ -65,11 +67,9 @@
   height: 100% !important;
 }
 
-/* Second level (main split container): fit within panel height */
+/* Second level (main split container): fit within panel width */
 .custom-trading-view-wrapper > * > * {
   width: 100% !important;
-  height: 100% !important;
-  max-height: 100% !important;
 }
 
 /* Split containers: allow width shrinking, keep natural height behavior */
