@@ -75,7 +75,6 @@ const ALL_MENU_ITEMS = [
   { name: "Markets", href: "/markets", translationKey: "common.markets" },
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Staking", href: "/staking", translationKey: "extend.staking" },
-  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   {
     name: "Rewards",
     href: "/rewards",
@@ -96,7 +95,6 @@ const ALL_MENU_ITEMS = [
 const EARN_SUBMENU_ITEMS = [
   { name: "Vaults", href: "/vaults", translationKey: "common.vaults" },
   { name: "Staking", href: "/staking", translationKey: "extend.staking" },
-  { name: "Points", href: "/points", translationKey: "tradingPoints.points" },
   { name: "Rewards", href: "/rewards", translationKey: "tradingRewards.rewards" },
 ];
 
