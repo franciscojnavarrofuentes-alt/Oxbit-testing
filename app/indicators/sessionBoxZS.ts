@@ -119,63 +119,71 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
   },
 
   constructor: function () {
-    (this as any).init = function (context: any) {
+    (this as any).init = function (context: any, inputCallback: any) {
       (this as any)._context = context;
+      (this as any)._input = inputCallback;
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
-      const Std = PineJS.Std;
+      (this as any)._context = context;
+      (this as any)._input = inputCallback;
 
-      const sessionStartH = inputCallback(0);
-      const sessionStartM = inputCallback(1);
-      const sessionEndH = inputCallback(2);
-      const sessionEndM = inputCallback(3);
-      const gmtOffset = inputCallback(4);
+      try {
+        const Std = PineJS.Std;
 
-      // Session times in minutes from midnight (in session timezone)
-      const sessionStartMinutes = sessionStartH * 60 + sessionStartM;
-      const sessionEndMinutes = sessionEndH * 60 + sessionEndM;
+        const sessionStartH = inputCallback(0);
+        const sessionStartM = inputCallback(1);
+        const sessionEndH = inputCallback(2);
+        const sessionEndM = inputCallback(3);
+        const gmtOffset = inputCallback(4);
 
-      // Get bar time and convert to session timezone
-      const barTime = Std.time(context);
-      const date = new Date(barTime);
-      const utcHours = date.getUTCHours();
-      const utcMinutes = date.getUTCMinutes();
-      const localMinutes = ((utcHours + gmtOffset) * 60 + utcMinutes + 1440) % 1440;
+        const sessionStartMinutes = sessionStartH * 60 + sessionStartM;
+        const sessionEndMinutes = sessionEndH * 60 + sessionEndM;
 
-      // Check if we're in session
-      const inSession = sessionEndMinutes > sessionStartMinutes
-        ? localMinutes >= sessionStartMinutes && localMinutes < sessionEndMinutes
-        : localMinutes >= sessionStartMinutes || localMinutes < sessionEndMinutes;
+        // Use bar time from context
+        const curHigh = Std.high(context);
+        const curLow = Std.low(context);
 
-      // Track session state
-      const highVar = context.new_var(NaN);
-      const lowVar = context.new_var(NaN);
-      const inSessionVar = context.new_var(false);
+        // Get bar time in milliseconds and compute local hour/minute
+        const barTimeMs = context.symbol.time;
+        if (!barTimeMs) return [NaN, NaN];
 
-      const prevInSession = inSessionVar.get(1);
-      const sessionStart = inSession && !prevInSession;
+        const date = new Date(barTimeMs);
+        const utcTotalMin = date.getUTCHours() * 60 + date.getUTCMinutes();
+        const localMin = ((utcTotalMin + gmtOffset * 60) % 1440 + 1440) % 1440;
 
-      const curHigh = Std.high(context);
-      const curLow = Std.low(context);
+        const inSession = sessionEndMinutes > sessionStartMinutes
+          ? localMin >= sessionStartMinutes && localMin < sessionEndMinutes
+          : localMin >= sessionStartMinutes || localMin < sessionEndMinutes;
 
-      if (sessionStart) {
-        highVar.set(curHigh);
-        lowVar.set(curLow);
-      } else if (inSession) {
-        const prevHigh = highVar.get(1);
-        const prevLow = lowVar.get(1);
-        highVar.set(Math.max(isNaN(prevHigh) ? curHigh : prevHigh, curHigh));
-        lowVar.set(Math.min(isNaN(prevLow) ? curLow : prevLow, curLow));
+        // Track state using new_var (persisted across bars)
+        const highVar = context.new_var(NaN);
+        const lowVar = context.new_var(NaN);
+        const wasInSessionVar = context.new_var(0);
+
+        const wasInSession = wasInSessionVar.get(0) === 1;
+        const sessionJustStarted = inSession && !wasInSession;
+
+        if (sessionJustStarted) {
+          highVar.set(curHigh);
+          lowVar.set(curLow);
+        } else if (inSession) {
+          const prevH = highVar.get(0);
+          const prevL = lowVar.get(0);
+          highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
+          lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
+        }
+
+        wasInSessionVar.set(inSession ? 1 : 0);
+
+        if (inSession) {
+          return [highVar.get(0), lowVar.get(0)];
+        }
+
+        return [NaN, NaN];
+      } catch {
+        return [NaN, NaN];
       }
-
-      inSessionVar.set(inSession);
-
-      if (inSession) {
-        return [highVar.get(0), lowVar.get(0)];
-      }
-
-      return [NaN, NaN];
     };
   },
 });
