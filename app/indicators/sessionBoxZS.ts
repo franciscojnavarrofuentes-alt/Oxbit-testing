@@ -146,47 +146,41 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
         : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      // Track state across bars
+      // State variables — use get(1) for previous bar's value
+      // (new_var(init) sets current bar to init, so get(0) returns init,
+      //  but get(1) returns the previous bar's final .set() value)
       const highVar = context.new_var(NaN);
       const lowVar = context.new_var(NaN);
-      const finalHighVar = context.new_var(NaN);
-      const finalLowVar = context.new_var(NaN);
-      const prevInSessionVar = context.new_var(0);
+      const inSessionVar = context.new_var(0);
 
-      const wasInSession = prevInSessionVar.get(0) === 1;
+      // Previous bar's session state
+      const wasInSession = inSessionVar.get(1) === 1;
       const sessionJustStarted = inSession && !wasInSession;
-      const sessionJustEnded = !inSession && wasInSession;
 
       if (sessionJustStarted) {
-        // New session: reset running high/low
+        // New session: reset to current bar
         highVar.set(curHigh);
         lowVar.set(curLow);
-        // Clear final values (new session starting)
-        finalHighVar.set(NaN);
-        finalLowVar.set(NaN);
       } else if (inSession) {
         // During session: expand running high/low
+        const prevH = highVar.get(1);
+        const prevL = lowVar.get(1);
+        highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
+        lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
+      } else {
+        // Outside session: carry forward last values
+        highVar.set(highVar.get(1));
+        lowVar.set(lowVar.get(1));
+      }
+
+      inSessionVar.set(inSession ? 1 : 0);
+
+      // Show only outside session (flat lines at the final session high/low)
+      if (!inSession) {
         const h = highVar.get(0);
         const l = lowVar.get(0);
-        highVar.set(isNaN(h) ? curHigh : Math.max(h, curHigh));
-        lowVar.set(isNaN(l) ? curLow : Math.min(l, curLow));
-      }
-
-      if (sessionJustEnded) {
-        // Session just ended: lock in the final values
-        finalHighVar.set(highVar.get(0));
-        finalLowVar.set(lowVar.get(0));
-      }
-
-      prevInSessionVar.set(inSession ? 1 : 0);
-
-      // Don't draw during the session (avoids step lines at each new high/low)
-      // Show the final session high/low only after the session ends
-      if (!inSession) {
-        const fh = finalHighVar.get(0);
-        const fl = finalLowVar.get(0);
-        if (!isNaN(fh) && !isNaN(fl)) {
-          return [fh, fl];
+        if (!isNaN(h) && !isNaN(l)) {
+          return [h, l];
         }
       }
 
