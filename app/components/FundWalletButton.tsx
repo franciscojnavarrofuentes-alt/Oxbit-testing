@@ -1,54 +1,34 @@
-import { useWallets } from '@privy-io/react-auth';
+import { useFundWallet, useWallets } from '@privy-io/react-auth';
 import { useCallback, useState } from 'react';
 
 export const FundWalletButton = () => {
   const { wallets } = useWallets();
+  const { fundWallet } = useFundWallet();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleFundWallet = useCallback(async () => {
-    try {
-      setIsLoading(true);
-
-      // Find the Privy embedded wallet
-      const embeddedWallet = wallets.find(
-        (wallet) => (wallet as any).walletClientType === 'privy'
-      );
-
-      if (!embeddedWallet) {
-        console.error('No embedded wallet found');
-        alert('No embedded wallet found. Please connect your wallet first.');
-        return;
-      }
-
-      // Call the fund method with configuration for USDC
-      // Do NOT pass chain parameter to avoid validation errors with Orderly SDK 2.9.1
-      if (typeof (embeddedWallet as any).fund === 'function') {
-        await (embeddedWallet as any).fund({
-          asset: 'USDC', // Default to USDC instead of ETH
-        });
-      } else {
-        console.error('Fund method not available on wallet');
-        alert('Funding not available for this wallet');
-      }
-    } catch (error) {
-      console.error('Error funding wallet:', error);
-      alert('Failed to open funding dialog. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wallets]);
-
-  // Only show button if there are wallets connected
-  if (!wallets || wallets.length === 0) {
-    return null;
-  }
-
-  // Check if there's an embedded wallet
-  const hasEmbeddedWallet = wallets.some(
+  const embeddedWallet = wallets.find(
     (wallet) => (wallet as any).walletClientType === 'privy'
   );
 
-  if (!hasEmbeddedWallet) {
+  const handleFundWallet = useCallback(async () => {
+    if (!embeddedWallet) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await fundWallet(embeddedWallet.address, {
+        amount: '50',
+        asset: 'USDC',
+      });
+    } catch (error) {
+      console.error('Error funding wallet:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [embeddedWallet, fundWallet]);
+
+  if (!embeddedWallet) {
     return null;
   }
 
