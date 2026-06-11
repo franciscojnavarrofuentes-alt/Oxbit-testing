@@ -32,6 +32,7 @@ import CustomLeftNav from "@/components/CustomLeftNav";
 import { FundWalletButton } from "@/components/FundWalletButton";
 import { createLiquidationLevelsIndicator } from "@/indicators/liquidationLevels";
 import { createEmaPivotesIndicator } from "@/indicators/emaPivotesZS";
+import { createSessionBoxIndicator } from "@/indicators/sessionBoxZS";
 
 interface MainNavItem {
   name: string;
@@ -444,6 +445,7 @@ export const useOrderlyConfig = () => {
           customIndicatorsGetter: (PineJS: any) => Promise.resolve([
             createLiquidationLevelsIndicator(PineJS),
             createEmaPivotesIndicator(PineJS),
+            createSessionBoxIndicator(PineJS),
           ]),
         },
         sharePnLConfig: {
