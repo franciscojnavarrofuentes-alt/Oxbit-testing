@@ -146,32 +146,48 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
         : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      // Use new_var to track state across bars
+      // Track state across bars
       const highVar = context.new_var(NaN);
       const lowVar = context.new_var(NaN);
+      const finalHighVar = context.new_var(NaN);
+      const finalLowVar = context.new_var(NaN);
       const prevInSessionVar = context.new_var(0);
 
       const wasInSession = prevInSessionVar.get(0) === 1;
       const sessionJustStarted = inSession && !wasInSession;
+      const sessionJustEnded = !inSession && wasInSession;
 
       if (sessionJustStarted) {
-        // New session: reset high/low to current bar
+        // New session: reset running high/low
         highVar.set(curHigh);
         lowVar.set(curLow);
+        // Clear final values (new session starting)
+        finalHighVar.set(NaN);
+        finalLowVar.set(NaN);
       } else if (inSession) {
-        // During session: expand high/low
+        // During session: expand running high/low
         const h = highVar.get(0);
         const l = lowVar.get(0);
         highVar.set(isNaN(h) ? curHigh : Math.max(h, curHigh));
         lowVar.set(isNaN(l) ? curLow : Math.min(l, curLow));
       }
 
+      if (sessionJustEnded) {
+        // Session just ended: lock in the final values
+        finalHighVar.set(highVar.get(0));
+        finalLowVar.set(lowVar.get(0));
+      }
+
       prevInSessionVar.set(inSession ? 1 : 0);
 
-      // Return values only during session — plottype 11 (StepLineWithBreaks)
-      // ensures NaN creates a break instead of a diagonal connection
-      if (inSession) {
-        return [highVar.get(0), lowVar.get(0)];
+      // Don't draw during the session (avoids step lines at each new high/low)
+      // Show the final session high/low only after the session ends
+      if (!inSession) {
+        const fh = finalHighVar.get(0);
+        const fl = finalLowVar.get(0);
+        if (!isNaN(fh) && !isNaN(fl)) {
+          return [fh, fl];
+        }
       }
 
       return [NaN, NaN];
