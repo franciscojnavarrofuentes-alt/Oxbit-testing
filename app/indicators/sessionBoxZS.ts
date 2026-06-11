@@ -135,22 +135,28 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionJustStarted = inSession && !wasInSession;
 
       if (sessionJustStarted) {
+        // New session: reset high/low to current bar
         highVar.set(curHigh);
         lowVar.set(curLow);
       } else if (inSession) {
+        // During session: expand high/low
         const h = highVar.get(0);
         const l = lowVar.get(0);
         highVar.set(isNaN(h) ? curHigh : Math.max(h, curHigh));
         lowVar.set(isNaN(l) ? curLow : Math.min(l, curLow));
       }
+      // Outside session: highVar/lowVar keep last session's values (no change)
 
       prevInSessionVar.set(inSession ? 1 : 0);
 
-      if (inSession) {
-        return [highVar.get(0), lowVar.get(0)];
+      // Always return the current (or last) session levels
+      // This avoids NaN gaps that cause diagonal connecting lines
+      const h = highVar.get(0);
+      const l = lowVar.get(0);
+      if (isNaN(h) || isNaN(l)) {
+        return [NaN, NaN];
       }
-
-      return [NaN, NaN];
+      return [h, l];
     };
   },
 });
