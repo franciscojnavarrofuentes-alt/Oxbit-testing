@@ -175,13 +175,9 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
       inSessionVar.set(inSession ? 1 : 0);
 
-      // Show only outside session (flat lines at the final session high/low)
-      if (!inSession) {
-        const h = highVar.get(0);
-        const l = lowVar.get(0);
-        if (!isNaN(h) && !isNaN(l)) {
-          return [h, l];
-        }
+      // Show during session (marks the correct session hours on the chart)
+      if (inSession) {
+        return [highVar.get(0), lowVar.get(0)];
       }
 
       return [NaN, NaN];
