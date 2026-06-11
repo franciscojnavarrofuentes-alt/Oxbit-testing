@@ -5,7 +5,7 @@
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
   metainfo: {
-    _metainfoVersion: 51,
+    _metainfoVersion: 52,
     id: 'SessionBoxZS@tv-basicstudies-1',
     name: 'ZS Indicador Caja - Aperturas',
     description: 'ZS Indicador Caja - Aperturas',
@@ -24,23 +24,43 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       { id: 'session_low', type: 'line' },
     ],
 
+    filledAreas: [
+      {
+        id: 'session_fill',
+        objAId: 'session_high',
+        objBId: 'session_low',
+        type: 'plot_plot',
+        title: 'Session Area',
+        fillgaps: false,
+      },
+    ],
+
     defaults: {
       styles: {
         session_high: {
           linestyle: 0,
+          visible: true,
           linewidth: 1,
-          plottype: 0,
+          plottype: 11, // StepLineWithBreaks: flat horizontal + breaks on NaN
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
         },
         session_low: {
           linestyle: 0,
+          visible: true,
           linewidth: 1,
-          plottype: 0,
+          plottype: 11, // StepLineWithBreaks
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
+        },
+      },
+      filledAreasStyle: {
+        session_fill: {
+          color: '#FFFFFF',
+          visible: true,
+          transparency: 85,
         },
       },
       precision: 2,
@@ -145,18 +165,16 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         highVar.set(isNaN(h) ? curHigh : Math.max(h, curHigh));
         lowVar.set(isNaN(l) ? curLow : Math.min(l, curLow));
       }
-      // Outside session: highVar/lowVar keep last session's values (no change)
 
       prevInSessionVar.set(inSession ? 1 : 0);
 
-      // Always return the current (or last) session levels
-      // This avoids NaN gaps that cause diagonal connecting lines
-      const h = highVar.get(0);
-      const l = lowVar.get(0);
-      if (isNaN(h) || isNaN(l)) {
-        return [NaN, NaN];
+      // Return values only during session — plottype 11 (StepLineWithBreaks)
+      // ensures NaN creates a break instead of a diagonal connection
+      if (inSession) {
+        return [highVar.get(0), lowVar.get(0)];
       }
-      return [h, l];
+
+      return [NaN, NaN];
     };
   },
 });
