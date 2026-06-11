@@ -24,23 +24,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       { id: 'session_low', type: 'line' },
     ],
 
-    filledAreas: [
-      {
-        id: 'session_fill',
-        objAId: 'session_high',
-        objBId: 'session_low',
-        type: 'plot_plot',
-        title: 'Session Range',
-      },
-    ],
-
     defaults: {
-      filledAreasStyle: {
-        session_fill: {
-          color: '#FFFFFF',
-          transparency: 75,
-        },
-      },
       styles: {
         session_high: {
           linestyle: 0,
@@ -122,68 +106,64 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     (this as any).init = function (context: any, inputCallback: any) {
       (this as any)._context = context;
       (this as any)._input = inputCallback;
+
+      // Persistent state
+      (this as any)._sessionHigh = NaN;
+      (this as any)._sessionLow = NaN;
+      (this as any)._wasInSession = false;
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
       (this as any)._context = context;
       (this as any)._input = inputCallback;
 
+      const Std = PineJS.Std;
+
+      const sessionStartH = inputCallback(0);
+      const sessionStartM = inputCallback(1);
+      const sessionEndH = inputCallback(2);
+      const sessionEndM = inputCallback(3);
+      const gmtOffset = inputCallback(4);
+
+      const sessionStartMin = sessionStartH * 60 + sessionStartM;
+      const sessionEndMin = sessionEndH * 60 + sessionEndM;
+
+      const curHigh = Std.high(context);
+      const curLow = Std.low(context);
+
+      // Compute local time from bar timestamp
+      let localMin = 0;
       try {
-        const Std = PineJS.Std;
-
-        const sessionStartH = inputCallback(0);
-        const sessionStartM = inputCallback(1);
-        const sessionEndH = inputCallback(2);
-        const sessionEndM = inputCallback(3);
-        const gmtOffset = inputCallback(4);
-
-        const sessionStartMinutes = sessionStartH * 60 + sessionStartM;
-        const sessionEndMinutes = sessionEndH * 60 + sessionEndM;
-
-        // Use bar time from context
-        const curHigh = Std.high(context);
-        const curLow = Std.low(context);
-
-        // Get bar time in milliseconds and compute local hour/minute
-        const barTimeMs = context.symbol.time;
-        if (!barTimeMs) return [NaN, NaN];
-
-        const date = new Date(barTimeMs);
-        const utcTotalMin = date.getUTCHours() * 60 + date.getUTCMinutes();
-        const localMin = ((utcTotalMin + gmtOffset * 60) % 1440 + 1440) % 1440;
-
-        const inSession = sessionEndMinutes > sessionStartMinutes
-          ? localMin >= sessionStartMinutes && localMin < sessionEndMinutes
-          : localMin >= sessionStartMinutes || localMin < sessionEndMinutes;
-
-        // Track state using new_var (persisted across bars)
-        const highVar = context.new_var(NaN);
-        const lowVar = context.new_var(NaN);
-        const wasInSessionVar = context.new_var(0);
-
-        const wasInSession = wasInSessionVar.get(0) === 1;
-        const sessionJustStarted = inSession && !wasInSession;
-
-        if (sessionJustStarted) {
-          highVar.set(curHigh);
-          lowVar.set(curLow);
-        } else if (inSession) {
-          const prevH = highVar.get(0);
-          const prevL = lowVar.get(0);
-          highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
-          lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
+        const t = context.symbol.time;
+        if (t) {
+          const d = new Date(t);
+          localMin = ((d.getUTCHours() + gmtOffset) * 60 + d.getUTCMinutes() + 1440) % 1440;
         }
-
-        wasInSessionVar.set(inSession ? 1 : 0);
-
-        if (inSession) {
-          return [highVar.get(0), lowVar.get(0)];
-        }
-
-        return [NaN, NaN];
-      } catch {
+      } catch (_e) {
         return [NaN, NaN];
       }
+
+      const inSession = sessionEndMin > sessionStartMin
+        ? localMin >= sessionStartMin && localMin < sessionEndMin
+        : localMin >= sessionStartMin || localMin < sessionEndMin;
+
+      const sessionJustStarted = inSession && !(this as any)._wasInSession;
+
+      if (sessionJustStarted) {
+        (this as any)._sessionHigh = curHigh;
+        (this as any)._sessionLow = curLow;
+      } else if (inSession) {
+        (this as any)._sessionHigh = Math.max((this as any)._sessionHigh, curHigh);
+        (this as any)._sessionLow = Math.min((this as any)._sessionLow, curLow);
+      }
+
+      (this as any)._wasInSession = inSession;
+
+      if (inSession) {
+        return [(this as any)._sessionHigh, (this as any)._sessionLow];
+      }
+
+      return [NaN, NaN];
     };
   },
 });
