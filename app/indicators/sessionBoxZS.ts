@@ -49,7 +49,6 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         sessionStartMin: 30,
         sessionEnd: 16,
         sessionEndMin: 0,
-        gmtOffset: 2,
       },
     },
 
@@ -61,7 +60,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     inputs: [
       {
         id: 'sessionStart',
-        name: 'Session Start Hour (GMT+offset)',
+        name: 'Session Start Hour',
         type: 'integer',
         defval: 14,
         min: 0,
@@ -77,7 +76,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       {
         id: 'sessionEnd',
-        name: 'Session End Hour (GMT+offset)',
+        name: 'Session End Hour',
         type: 'integer',
         defval: 16,
         min: 0,
@@ -91,14 +90,6 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         min: 0,
         max: 59,
       },
-      {
-        id: 'gmtOffset',
-        name: 'GMT Offset',
-        type: 'integer',
-        defval: 2,
-        min: -12,
-        max: 14,
-      },
     ],
   },
 
@@ -106,11 +97,6 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     (this as any).init = function (context: any, inputCallback: any) {
       (this as any)._context = context;
       (this as any)._input = inputCallback;
-
-      // Persistent state
-      (this as any)._sessionHigh = NaN;
-      (this as any)._sessionLow = NaN;
-      (this as any)._wasInSession = false;
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
@@ -123,44 +109,45 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionStartM = inputCallback(1);
       const sessionEndH = inputCallback(2);
       const sessionEndM = inputCallback(3);
-      const gmtOffset = inputCallback(4);
 
-      const sessionStartMin = sessionStartH * 60 + sessionStartM;
-      const sessionEndMin = sessionEndH * 60 + sessionEndM;
+      const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
+      const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
+
+      // Use PineJS Std.hour and Std.minute to get the bar's exchange time
+      const barHour = Std.hour(context);
+      const barMinute = Std.minute(context);
+      const barTotalMin = barHour * 60 + barMinute;
 
       const curHigh = Std.high(context);
       const curLow = Std.low(context);
 
-      // Compute local time from bar timestamp
-      let localMin = 0;
-      try {
-        const t = context.symbol.time;
-        if (t) {
-          const d = new Date(t);
-          localMin = ((d.getUTCHours() + gmtOffset) * 60 + d.getUTCMinutes() + 1440) % 1440;
-        }
-      } catch (_e) {
-        return [NaN, NaN];
-      }
+      // Check if bar is within session
+      const inSession = sessionEndTotalMin > sessionStartTotalMin
+        ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
+        : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      const inSession = sessionEndMin > sessionStartMin
-        ? localMin >= sessionStartMin && localMin < sessionEndMin
-        : localMin >= sessionStartMin || localMin < sessionEndMin;
+      // Use new_var to track state across bars
+      const highVar = context.new_var(NaN);
+      const lowVar = context.new_var(NaN);
+      const prevInSessionVar = context.new_var(0);
 
-      const sessionJustStarted = inSession && !(this as any)._wasInSession;
+      const wasInSession = prevInSessionVar.get(0) === 1;
+      const sessionJustStarted = inSession && !wasInSession;
 
       if (sessionJustStarted) {
-        (this as any)._sessionHigh = curHigh;
-        (this as any)._sessionLow = curLow;
+        highVar.set(curHigh);
+        lowVar.set(curLow);
       } else if (inSession) {
-        (this as any)._sessionHigh = Math.max((this as any)._sessionHigh, curHigh);
-        (this as any)._sessionLow = Math.min((this as any)._sessionLow, curLow);
+        const h = highVar.get(0);
+        const l = lowVar.get(0);
+        highVar.set(isNaN(h) ? curHigh : Math.max(h, curHigh));
+        lowVar.set(isNaN(l) ? curLow : Math.min(l, curLow));
       }
 
-      (this as any)._wasInSession = inSession;
+      prevInSessionVar.set(inSession ? 1 : 0);
 
       if (inSession) {
-        return [(this as any)._sessionHigh, (this as any)._sessionLow];
+        return [highVar.get(0), lowVar.get(0)];
       }
 
       return [NaN, NaN];
