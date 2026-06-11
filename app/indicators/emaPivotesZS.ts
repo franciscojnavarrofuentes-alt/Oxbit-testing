@@ -9,7 +9,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
     _metainfoVersion: 51,
     id: 'EmaPivotesZS@tv-basicstudies-1',
     name: 'EMA y Pivotes ZS v4',
-    description: 'EMA + Pivot Support/Resistance with BUY/SELL signals',
+    description: 'EMA y Pivotes ZS Strategy v4',
     shortDescription: 'EMA Pivotes ZS',
 
     is_price_study: true,
