@@ -31,6 +31,7 @@ import { Link } from "react-router-dom";
 import CustomLeftNav from "@/components/CustomLeftNav";
 import { FundWalletButton } from "@/components/FundWalletButton";
 import { createLiquidationLevelsIndicator } from "@/indicators/liquidationLevels";
+import { createEmaPivotesIndicator } from "@/indicators/emaPivotesZS";
 
 interface MainNavItem {
   name: string;
@@ -440,7 +441,10 @@ export const useOrderlyConfig = () => {
           library_path: withBasePath("/tradingview/charting_library/"),
           customCssUrl: withBasePath("/tradingview/chart.css"),
           colorConfig: getColorConfig(),
-          customIndicatorsGetter: (PineJS: any) => Promise.resolve([createLiquidationLevelsIndicator(PineJS)]),
+          customIndicatorsGetter: (PineJS: any) => Promise.resolve([
+            createLiquidationLevelsIndicator(PineJS),
+            createEmaPivotesIndicator(PineJS),
+          ]),
         },
         sharePnLConfig: {
           backgroundImages: getPnLBackgroundImages(),
