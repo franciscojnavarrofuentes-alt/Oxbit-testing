@@ -60,7 +60,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         session_fill: {
           color: '#FFFFFF',
           visible: true,
-          transparency: 85,
+          transparency: 75,
         },
       },
       precision: 2,
