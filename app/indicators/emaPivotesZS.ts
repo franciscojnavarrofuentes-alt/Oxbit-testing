@@ -125,6 +125,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       // request.security(syminfo.tickerid, Periodos, ...)
       (this as any)._context.new_sym(symbol, pivotResolution);
 
+      (this as any)._lastResValue = NaN;
+      (this as any)._lastSupValue = NaN;
       (this as any)._lastTouchRes = undefined;
       (this as any)._lastTouchSup = undefined;
       (this as any)._barsSinceSell = undefined;
@@ -191,8 +193,16 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       );
 
       // lookahead_on: adopt(secondaryTime, mainTime, 1)
-      const resistencia = pivotHighSeries.adopt(pivotTime, mainTime, 1);
-      const soporte = pivotLowSeries.adopt(pivotTime, mainTime, 1);
+      const rawRes = pivotHighSeries.adopt(pivotTime, mainTime, 1);
+      const rawSup = pivotLowSeries.adopt(pivotTime, mainTime, 1);
+
+      // Carry-forward: adopt mode 1 only returns values on HTF boundary bars.
+      // On all other bars it returns NaN, so we persist the last known level.
+      if (!isNaN(rawRes)) (this as any)._lastResValue = rawRes;
+      if (!isNaN(rawSup)) (this as any)._lastSupValue = rawSup;
+
+      const resistencia = (this as any)._lastResValue;
+      const soporte = (this as any)._lastSupValue;
 
       // Back to main symbol
       (this as any)._context.select_sym(0);
