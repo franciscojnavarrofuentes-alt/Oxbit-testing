@@ -275,9 +275,13 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       (this as any)._prevSellCondition = sellCondition;
       (this as any)._prevBuyCondition = buyCondition;
 
+      // Break line when level changes (equivalent to Pine's color=na on change)
+      const resChanged = !isNaN(resistenciaPrev) && resistencia !== resistenciaPrev;
+      const supChanged = !isNaN(soportePrev) && soporte !== soportePrev;
+
       return [
-        showPivots ? resistencia : NaN,
-        showPivots ? soporte : NaN,
+        showPivots ? (resChanged ? NaN : resistencia) : NaN,
+        showPivots ? (supChanged ? NaN : soporte) : NaN,
         emaValue,
         sellSignal ? high : NaN,
         buySignal ? low : NaN,
