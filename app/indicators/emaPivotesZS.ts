@@ -119,11 +119,11 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       (this as any)._context = context;
       (this as any)._input = inputCallback;
 
-      const pivotResolution = (this as any)._input(2);
       const symbol = PineJS.Std.tickerid((this as any)._context);
 
       // request.security(syminfo.tickerid, Periodos, ...)
-      (this as any)._context.new_sym(symbol, pivotResolution);
+      // Hardcoded '480' to rule out input issues
+      (this as any)._context.new_sym(symbol, '480');
 
       (this as any)._lastResValue = undefined;
       (this as any)._lastSupValue = undefined;
