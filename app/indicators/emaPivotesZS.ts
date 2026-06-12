@@ -66,6 +66,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         sellSignal: {
           color: '#ba160c',
           textColor: '#ffffff',
+          plottype: 'shape_label_down',
           transparency: 0,
           visible: true,
           location: 'AboveBar',
@@ -74,6 +75,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         buySignal: {
           color: '#ffec00',
           textColor: '#000000',
+          plottype: 'shape_label_up',
           transparency: 0,
           visible: true,
           location: 'BelowBar',
@@ -84,7 +86,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       inputs: {
         emaPeriods: 12,
         showPivots: true,
-        pivotResolution: '400',
+        pivotResolution: '480',
       },
     },
 
@@ -107,7 +109,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         id: 'pivotResolution',
         name: 'Periodos',
         type: 'text',
-        defval: '400',
+        defval: '480',
       },
     ],
   },
