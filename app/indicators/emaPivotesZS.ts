@@ -42,7 +42,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         resistencia: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 7,
           trackPrice: false,
           transparency: 0,
           color: '#ba160c',
@@ -50,7 +50,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         soporte: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 7,
           trackPrice: false,
           transparency: 0,
           color: '#ffec00',
