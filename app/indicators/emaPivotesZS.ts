@@ -69,6 +69,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
           plottype: 'shape_label_down',
           transparency: 0,
           visible: true,
+          location: 'Absolute',
           size: 'huge',
         },
         buySignal: {
@@ -77,6 +78,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
           plottype: 'shape_label_up',
           transparency: 0,
           visible: true,
+          location: 'Absolute',
           size: 'huge',
         },
       },
