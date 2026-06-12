@@ -139,8 +139,8 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionStartTotalMin = inputCallback(0) * 60 + inputCallback(1);
       const sessionEndTotalMin = inputCallback(2) * 60 + inputCallback(3);
 
-      // Convert bar time to NY timezone
-      const barTime = context.symbol.time;
+      // Convert bar time to NY timezone using Std.time (Unix ms UTC)
+      const barTime = Std.time(context);
       if (!barTime || isNaN(barTime)) {
         return [NaN, NaN];
       }
