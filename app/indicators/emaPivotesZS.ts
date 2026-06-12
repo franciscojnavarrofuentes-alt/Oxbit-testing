@@ -6,7 +6,7 @@
 export const createEmaPivotesIndicator = (PineJS: any): any => ({
   name: 'EMA y Pivotes ZS v4',
   metainfo: {
-    _metainfoVersion: 51,
+    _metainfoVersion: 53,
     id: 'EmaPivotesZS@tv-basicstudies-1',
     name: 'EMA y Pivotes ZS v4',
     description: 'EMA y Pivotes ZS Strategy v4',
@@ -14,6 +14,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
 
     is_price_study: true,
     isCustomIndicator: true,
+    linkedToSeries: true,
 
     format: {
       type: 'price',
@@ -21,247 +22,264 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
     },
 
     plots: [
-      { id: 'ema_line', type: 'line' },
-      { id: 'resistance', type: 'line' },
-      { id: 'support', type: 'line' },
-      { id: 'sell_signal', type: 'shapes' },
-      { id: 'buy_signal', type: 'shapes' },
+      { id: 'resistencia', type: 'line' },
+      { id: 'soporte', type: 'line' },
+      { id: 'ema', type: 'line' },
+      { id: 'sellSignal', type: 'shapes' },
+      { id: 'buySignal', type: 'shapes' },
     ],
+
+    styles: {
+      resistencia: { title: 'Resistencia' },
+      soporte: { title: 'Soporte' },
+      ema: { title: 'EMA' },
+      sellSignal: { title: 'SELL Signal' },
+      buySignal: { title: 'BUY Signal' },
+    },
 
     defaults: {
       styles: {
-        ema_line: {
+        resistencia: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line (original: plot.style_stepline)
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
-          color: '#FFFFFF',
+          color: '#ba160c',
         },
-        resistance: {
+        soporte: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 7, // LineWithBreaks (breaks on NaN to create separate segments)
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
-          color: '#BA160C',
+          color: '#ffec00',
         },
-        support: {
+        ema: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 7, // LineWithBreaks
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
-          color: '#FFEC00',
+          color: '#ffffff',
         },
-        sell_signal: {
-          color: '#BA160C',
-          plottype: 'shape_label_down',
+        sellSignal: {
+          color: '#ba160c',
+          textColor: '#ffffff',
+          transparency: 0,
+          visible: true,
           location: 'AboveBar',
           size: 'normal',
-          text: '',
         },
-        buy_signal: {
-          color: '#FFEC00',
-          plottype: 'shape_label_up',
+        buySignal: {
+          color: '#ffec00',
+          textColor: '#000000',
+          transparency: 0,
+          visible: true,
           location: 'BelowBar',
           size: 'normal',
-          text: '',
         },
       },
       precision: 2,
       inputs: {
         emaPeriods: 12,
-        htfPeriod: '400',
-        cooldownBars: 12,
         showPivots: true,
+        pivotResolution: '400',
       },
-    },
-
-    styles: {
-      ema_line: { title: 'EMA', histogramBase: 0 },
-      resistance: { title: 'Resistance', histogramBase: 0 },
-      support: { title: 'Support', histogramBase: 0 },
-      sell_signal: { title: 'SELL Signal' },
-      buy_signal: { title: 'BUY Signal' },
     },
 
     inputs: [
       {
         id: 'emaPeriods',
-        name: 'EMA Period',
+        name: 'EMA Periods',
         type: 'integer',
         defval: 12,
         min: 1,
         max: 200,
       },
       {
-        id: 'htfPeriod',
-        name: 'Pivot Timeframe',
-        type: 'text',
-        defval: '400',
-      },
-      {
-        id: 'cooldownBars',
-        name: 'Signal Cooldown (bars)',
-        type: 'integer',
-        defval: 12,
-        min: 1,
-        max: 100,
-      },
-      {
         id: 'showPivots',
-        name: 'Show Pivots',
+        name: 'Mostrar Pivotes',
         type: 'bool',
         defval: true,
+      },
+      {
+        id: 'pivotResolution',
+        name: 'Periodos',
+        type: 'text',
+        defval: '400',
       },
     ],
   },
 
   constructor: function () {
     (this as any).init = function (context: any, inputCallback: any) {
-      // No secondary symbol — HTF levels computed manually on main series
+      (this as any)._context = context;
+      (this as any)._input = inputCallback;
+
+      const pivotResolution = (this as any)._input(2);
+      const symbol = PineJS.Std.tickerid((this as any)._context);
+
+      // request.security(syminfo.tickerid, Periodos, ...)
+      (this as any)._context.new_sym(symbol, pivotResolution);
+
+      (this as any)._lastTouchRes = undefined;
+      (this as any)._lastTouchSup = undefined;
+      (this as any)._barsSinceSell = undefined;
+      (this as any)._barsSinceBuy = undefined;
+      (this as any)._prevTouchedRes = false;
+      (this as any)._prevTouchedSup = false;
+      (this as any)._prevSellCondition = false;
+      (this as any)._prevBuyCondition = false;
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
-      // Read inputs
-      const emaPeriods = inputCallback(0);
-      const htfPeriodStr = inputCallback(1); // e.g. "400" (minutes)
-      const cooldownBars = inputCallback(2);
-      const showPivots = inputCallback(3);
+      (this as any)._context = context;
+      (this as any)._input = inputCallback;
 
-      const Std = PineJS.Std;
-      const htfMinutes = parseInt(htfPeriodStr, 10) || 400;
-      const htfMs = htfMinutes * 60 * 1000;
+      const emaPeriods = (this as any)._input(0);
+      const showPivots = (this as any)._input(1);
 
-      // -- EMA calculation on main series --
-      // new_var #1
-      const closeSeries = context.new_var(Std.close(context));
-      const emaValue = Std.ema(closeSeries, emaPeriods, context);
+      // Main symbol / chart timeframe
+      (this as any)._context.select_sym(0);
 
-      // -- Manual HTF bar detection --
-      // Group main bars into HTF periods by timestamp
-      const barTime = Std.time(context);
-      const curHigh = Std.high(context);
-      const curLow = Std.low(context);
-      const htfBarId = Math.floor(barTime / htfMs);
+      const mainTime = (this as any)._context.new_var(
+        (this as any)._context.symbol.time
+      );
 
-      // new_var #2: track which HTF bar we're in
-      const htfBarIdVar = context.new_var(htfBarId);
-      const prevHtfBarId = htfBarIdVar.get(1);
-      const newHtfBar = !isNaN(prevHtfBarId) && htfBarId !== prevHtfBarId;
+      const closeSeries = (this as any)._context.new_var(
+        PineJS.Std.close((this as any)._context)
+      );
+      const highSeries = (this as any)._context.new_var(
+        PineJS.Std.high((this as any)._context)
+      );
+      const lowSeries = (this as any)._context.new_var(
+        PineJS.Std.low((this as any)._context)
+      );
 
-      // new_var #3, #4: running high/low within current HTF bar
-      const runHighVar = context.new_var(curHigh);
-      const runLowVar = context.new_var(curLow);
+      const close = closeSeries.get(0);
+      const high = highSeries.get(0);
+      const low = lowSeries.get(0);
 
-      // new_var #5, #6: resistance/support = previous completed HTF bar's high/low
-      const resVar = context.new_var(NaN);
-      const supVar = context.new_var(NaN);
+      const closePrev = closeSeries.get(1);
+      const highPrev = highSeries.get(1);
+      const lowPrev = lowSeries.get(1);
 
-      if (newHtfBar) {
-        // HTF bar boundary: save previous HTF bar's final high/low as levels
-        resVar.set(runHighVar.get(1));
-        supVar.set(runLowVar.get(1));
-        // Reset running high/low for new HTF bar
-        runHighVar.set(curHigh);
-        runLowVar.set(curLow);
-      } else {
-        // Within same HTF bar: expand running high/low, carry levels forward
-        const prevRunH = runHighVar.get(1);
-        const prevRunL = runLowVar.get(1);
-        runHighVar.set(isNaN(prevRunH) ? curHigh : Math.max(prevRunH, curHigh));
-        runLowVar.set(isNaN(prevRunL) ? curLow : Math.min(prevRunL, curLow));
-        resVar.set(resVar.get(1));
-        supVar.set(supVar.get(1));
+      const emaValue = PineJS.Std.ema(
+        closeSeries,
+        emaPeriods,
+        (this as any)._context
+      );
+
+      const emaSeries = (this as any)._context.new_var(emaValue);
+      const emaPrev = emaSeries.get(1);
+
+      // Secondary symbol / 400m timeframe
+      (this as any)._context.select_sym(1);
+
+      const pivotTime = (this as any)._context.new_var(
+        (this as any)._context.symbol.time
+      );
+
+      const pivotHighSeries = (this as any)._context.new_var(
+        PineJS.Std.high((this as any)._context)
+      );
+      const pivotLowSeries = (this as any)._context.new_var(
+        PineJS.Std.low((this as any)._context)
+      );
+
+      // lookahead_on: adopt(secondaryTime, mainTime, 1)
+      const resistencia = pivotHighSeries.adopt(pivotTime, mainTime, 1);
+      const soporte = pivotLowSeries.adopt(pivotTime, mainTime, 1);
+
+      // Back to main symbol
+      (this as any)._context.select_sym(0);
+
+      const resistenciaSeries = (this as any)._context.new_var(resistencia);
+      const soporteSeries = (this as any)._context.new_var(soporte);
+
+      const resistenciaPrev = resistenciaSeries.get(1);
+      const soportePrev = soporteSeries.get(1);
+
+      // Detectar toques de pivotes
+      const touchResistencia =
+        (high > resistencia && highPrev <= resistenciaPrev) ||
+        (high >= resistencia && highPrev < resistenciaPrev);
+
+      const touchSoporte =
+        (low < soporte && lowPrev >= soportePrev) ||
+        (low <= soporte && lowPrev > soportePrev);
+
+      // barssince(touch_resistencia)
+      if (touchResistencia) {
+        (this as any)._lastTouchRes = 0;
+      } else if ((this as any)._lastTouchRes !== undefined) {
+        (this as any)._lastTouchRes += 1;
       }
 
-      const resistance = resVar.get(0);
-      const supportVal = supVar.get(0);
-      const prevResistance = resVar.get(1);
-      const prevSupport = supVar.get(1);
-
-      // Break line when level changes (NaN gap with plottype 7 LineWithBreaks)
-      const resChanged = !isNaN(prevResistance) && resistance !== prevResistance;
-      const supChanged = !isNaN(prevSupport) && supportVal !== prevSupport;
-
-      // -- Track close and EMA for crossover detection --
-      // new_var #7, #8, #9, #10
-      const closeVar = context.new_var(Std.close(context));
-      const emaVar = context.new_var(emaValue);
-      const highVar = context.new_var(curHigh);
-      const lowVar = context.new_var(curLow);
-
-      const curClose = closeVar.get(0);
-      const prevClose = closeVar.get(1);
-      const curEma = emaVar.get(0);
-      const prevEma = emaVar.get(1);
-      const prevHigh = highVar.get(1);
-      const prevLow = lowVar.get(1);
-
-      // -- Touch detection --
-      const touchResistance =
-        (curHigh >= resistance && prevHigh < resistance) ||
-        (curHigh >= resistance && prevHigh < prevResistance);
-      const touchSupport =
-        (curLow <= supportVal && prevLow > supportVal) ||
-        (curLow <= supportVal && prevLow > prevSupport);
-
-      // -- Track bars since touch --
-      // new_var #11, #12
-      const touchResVar = context.new_var(0);
-      const touchSupVar = context.new_var(0);
-
-      if (touchResistance) {
-        touchResVar.set(0);
-      } else {
-        touchResVar.set((touchResVar.get(1) || 0) + 1);
+      // barssince(touch_soporte)
+      if (touchSoporte) {
+        (this as any)._lastTouchSup = 0;
+      } else if ((this as any)._lastTouchSup !== undefined) {
+        (this as any)._lastTouchSup += 1;
       }
 
-      if (touchSupport) {
-        touchSupVar.set(0);
-      } else {
-        touchSupVar.set((touchSupVar.get(1) || 0) + 1);
+      const touchedRes =
+        (this as any)._lastTouchRes !== undefined &&
+        (this as any)._lastTouchRes >= 0 &&
+        (this as any)._lastTouchRes <= 12;
+
+      const touchedSup =
+        (this as any)._lastTouchSup !== undefined &&
+        (this as any)._lastTouchSup >= 0 &&
+        (this as any)._lastTouchSup <= 12;
+
+      const closeBelowEma = close < emaValue && closePrev >= emaPrev;
+      const closeAboveEma = close > emaValue && closePrev <= emaPrev;
+
+      // sell_condition = touched_res[1] and close_below_ema
+      // buy_condition = touched_sup[1] and close_above_ema
+      const sellCondition = (this as any)._prevTouchedRes && closeBelowEma;
+      const buyCondition = (this as any)._prevTouchedSup && closeAboveEma;
+
+      // bars_since_sell = ta.barssince(sell_condition[1])
+      // bars_since_buy = ta.barssince(buy_condition[1])
+      if ((this as any)._prevSellCondition) {
+        (this as any)._barsSinceSell = 0;
+      } else if ((this as any)._barsSinceSell !== undefined) {
+        (this as any)._barsSinceSell += 1;
       }
 
-      const barsSinceTouchRes = touchResVar.get(0);
-      const barsSinceTouchSup = touchSupVar.get(0);
-
-      const touchedRes = barsSinceTouchRes >= 1 && barsSinceTouchRes <= cooldownBars + 1;
-      const touchedSup = barsSinceTouchSup >= 1 && barsSinceTouchSup <= cooldownBars + 1;
-
-      // EMA crossover/crossunder
-      const closeBelowEma = curClose < curEma && prevClose >= prevEma;
-      const closeAboveEma = curClose > curEma && prevClose <= prevEma;
-
-      const sellConditionRaw = touchedRes && closeBelowEma;
-      const buyConditionRaw = touchedSup && closeAboveEma;
-
-      // Cooldown tracking
-      // new_var #13, #14
-      const barsSinceSellVar = context.new_var(999);
-      const barsSinceBuyVar = context.new_var(999);
-
-      if (sellConditionRaw && barsSinceSellVar.get(1) > cooldownBars) {
-        barsSinceSellVar.set(0);
-      } else {
-        barsSinceSellVar.set((barsSinceSellVar.get(1) || 0) + 1);
+      if ((this as any)._prevBuyCondition) {
+        (this as any)._barsSinceBuy = 0;
+      } else if ((this as any)._barsSinceBuy !== undefined) {
+        (this as any)._barsSinceBuy += 1;
       }
 
-      if (buyConditionRaw && barsSinceBuyVar.get(1) > cooldownBars) {
-        barsSinceBuyVar.set(0);
-      } else {
-        barsSinceBuyVar.set((barsSinceBuyVar.get(1) || 0) + 1);
-      }
+      const canSell =
+        (this as any)._barsSinceSell === undefined ||
+        (this as any)._barsSinceSell > 12;
 
-      const sellSignal = barsSinceSellVar.get(0) === 0 ? 1 : NaN;
-      const buySignal = barsSinceBuyVar.get(0) === 0 ? 1 : NaN;
+      const canBuy =
+        (this as any)._barsSinceBuy === undefined ||
+        (this as any)._barsSinceBuy > 12;
 
-      // -- Output --
-      const resPlot = showPivots ? (resChanged ? NaN : resistance) : NaN;
-      const supPlot = showPivots ? (supChanged ? NaN : supportVal) : NaN;
+      const sellSignal = sellCondition && canSell;
+      const buySignal = buyCondition && canBuy;
 
-      return [emaValue, resPlot, supPlot, sellSignal, buySignal];
+      // Guardar estados para la siguiente vela
+      (this as any)._prevTouchedRes = touchedRes;
+      (this as any)._prevTouchedSup = touchedSup;
+      (this as any)._prevSellCondition = sellCondition;
+      (this as any)._prevBuyCondition = buyCondition;
+
+      return [
+        showPivots ? resistencia : NaN,
+        showPivots ? soporte : NaN,
+        emaValue,
+        sellSignal ? high : NaN,
+        buySignal ? low : NaN,
+      ];
     };
   },
 });
