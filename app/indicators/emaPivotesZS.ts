@@ -190,16 +190,31 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         PineJS.Std.low((this as any)._context)
       );
 
-      // lookahead_on: adopt(secondaryTime, mainTime, 1)
-      const resistencia = pivotHighSeries.adopt(pivotTime, mainTime, 1);
-      const soporte = pivotLowSeries.adopt(pivotTime, mainTime, 1);
+      // adopt(secondaryTime, mainTime, 0) — mode 0 = continuous (fill forward)
+      const adoptedRes = pivotHighSeries.adopt(pivotTime, mainTime, 0);
+      const adoptedSup = pivotLowSeries.adopt(pivotTime, mainTime, 0);
 
       // Back to main symbol
       (this as any)._context.select_sym(0);
 
-      const resistenciaSeries = (this as any)._context.new_var(resistencia);
-      const soporteSeries = (this as any)._context.new_var(soporte);
+      // Carry forward: if adopt returned NaN, keep previous bar's value
+      const resistenciaSeries = (this as any)._context.new_var(NaN);
+      const soporteSeries = (this as any)._context.new_var(NaN);
 
+      if (!isNaN(adoptedRes)) {
+        resistenciaSeries.set(adoptedRes);
+      } else {
+        resistenciaSeries.set(resistenciaSeries.get(1));
+      }
+
+      if (!isNaN(adoptedSup)) {
+        soporteSeries.set(adoptedSup);
+      } else {
+        soporteSeries.set(soporteSeries.get(1));
+      }
+
+      const resistencia = resistenciaSeries.get(0);
+      const soporte = soporteSeries.get(0);
       const resistenciaPrev = resistenciaSeries.get(1);
       const soportePrev = soporteSeries.get(1);
 
