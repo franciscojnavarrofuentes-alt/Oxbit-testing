@@ -58,7 +58,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 5,
           trackPrice: false,
           transparency: 0,
           color: '#ffffff',
@@ -293,8 +293,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         showPivots ? (resChanged ? NaN : resistencia) : NaN,
         showPivots ? (supChanged ? NaN : soporte) : NaN,
         emaValue,
-        sellSignal ? high : NaN,
-        buySignal ? low : NaN,
+        sellSignal ? resistencia : NaN,
+        buySignal ? soporte : NaN,
       ];
     };
   },
