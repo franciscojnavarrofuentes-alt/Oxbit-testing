@@ -128,16 +128,14 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const Std = PineJS.Std;
 
       // Create state variables ALWAYS, in the same order, before any early return
-      const highVar = context.new_var();
-      const lowVar = context.new_var();
-      const inSessionVar = context.new_var();
+      const highVar = context.new_var(NaN);
+      const lowVar = context.new_var(NaN);
+      const inSessionVar = context.new_var(0);
 
-      // Only makes sense on intraday resolutions
       if (!Std.isintraday(context)) {
         return [NaN, NaN];
       }
 
-      // Inputs in New York time (defaults: 9:30 – 11:00)
       const sessionStartTotalMin = inputCallback(0) * 60 + inputCallback(1);
       const sessionEndTotalMin = inputCallback(2) * 60 + inputCallback(3);
 
@@ -151,33 +149,43 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const m = Number(parts.find((p: any) => p.type === 'minute').value);
       const barTotalMin = h * 60 + m;
 
+      const curHigh = Std.high(context);
+      const curLow = Std.low(context);
+
+      // Check if bar is within session
       const inSession =
         sessionEndTotalMin > sessionStartTotalMin
           ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
           : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
+      // Previous bar's session state
       const wasInSession = inSessionVar.get(1) === 1;
-      inSessionVar.set(inSession ? 1 : 0);
+      const sessionJustStarted = inSession && !wasInSession;
 
-      const curHigh = Std.high(context);
-      const curLow = Std.low(context);
-
-      if (inSession && !wasInSession) {
-        // First bar of session: reset the range
+      if (sessionJustStarted) {
+        // New session: reset to current bar
         highVar.set(curHigh);
         lowVar.set(curLow);
       } else if (inSession) {
+        // During session: expand running high/low
         const prevH = highVar.get(1);
         const prevL = lowVar.get(1);
         highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
         lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
       } else {
-        // Outside session: preserve last range
+        // Outside session: carry forward last values
         highVar.set(highVar.get(1));
         lowVar.set(lowVar.get(1));
       }
 
-      return inSession ? [highVar.get(0), lowVar.get(0)] : [NaN, NaN];
+      inSessionVar.set(inSession ? 1 : 0);
+
+      // Show during session (marks the correct session hours on the chart)
+      if (inSession) {
+        return [highVar.get(0), lowVar.get(0)];
+      }
+
+      return [NaN, NaN];
     };
   },
 });
