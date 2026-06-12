@@ -7,7 +7,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
   name: 'EMA y Pivotes ZS v4',
   metainfo: {
     _metainfoVersion: 53,
-    id: 'EmaPivotesZS@tv-basicstudies-1',
+    id: 'EmaPivotesZS@custom-1',
     name: 'EMA y Pivotes ZS v4',
     description: 'EMA y Pivotes ZS Strategy v4',
     shortDescription: 'EMA Pivotes ZS',
@@ -197,21 +197,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       // Back to main symbol
       (this as any)._context.select_sym(0);
 
-      // Carry forward: if adopt returned NaN, keep previous bar's value
-      const resistenciaSeries = (this as any)._context.new_var(NaN);
-      const soporteSeries = (this as any)._context.new_var(NaN);
-
-      if (!isNaN(adoptedRes)) {
-        resistenciaSeries.set(adoptedRes);
-      } else {
-        resistenciaSeries.set(resistenciaSeries.get(1));
-      }
-
-      if (!isNaN(adoptedSup)) {
-        soporteSeries.set(adoptedSup);
-      } else {
-        soporteSeries.set(soporteSeries.get(1));
-      }
+      const resistenciaSeries = (this as any)._context.new_var(adoptedRes);
+      const soporteSeries = (this as any)._context.new_var(adoptedSup);
 
       const resistencia = resistenciaSeries.get(0);
       const soporte = soporteSeries.get(0);
