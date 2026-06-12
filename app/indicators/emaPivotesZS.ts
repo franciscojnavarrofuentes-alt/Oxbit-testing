@@ -42,7 +42,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         resistencia: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6, // step line — flat horizontal segments
           trackPrice: false,
           transparency: 0,
           color: '#ba160c',
@@ -50,7 +50,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         soporte: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6, // step line — flat horizontal segments
           trackPrice: false,
           transparency: 0,
           color: '#ffec00',
@@ -58,7 +58,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6, // step line (original: plot.style_stepline)
           trackPrice: false,
           transparency: 0,
           color: '#ffffff',
