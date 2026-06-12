@@ -33,7 +33,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema_line: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line
+          plottype: 0, // smooth line (curve)
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
@@ -41,7 +41,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         resistance: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6, // step line (flat horizontal, jumps on pivot change)
           trackPrice: false,
           transparency: 0,
           color: '#BA160C',
@@ -49,21 +49,21 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         support: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6, // step line (flat horizontal, jumps on pivot change)
           trackPrice: false,
           transparency: 0,
           color: '#FFEC00',
         },
         sell_signal: {
           color: '#BA160C',
-          plottype: 'shape_label_down',
+          plottype: 'shape_diamond',
           location: 'AboveBar',
           size: 'small',
           text: '',
         },
         buy_signal: {
           color: '#FFEC00',
-          plottype: 'shape_label_up',
+          plottype: 'shape_diamond',
           location: 'BelowBar',
           size: 'small',
           text: '',
