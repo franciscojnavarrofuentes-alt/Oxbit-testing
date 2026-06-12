@@ -115,20 +115,12 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
   constructor: function () {
     (this as any).init = function (context: any, inputCallback: any) {
-      (this as any)._context = context;
-      (this as any)._input = inputCallback;
-
-      // Request 30-min resolution of the same symbol.
-      // All base-resolution bars within a 30-min block will share
-      // the same high/low, drastically reducing visible "steps".
+      // Request 30-min resolution of the same symbol (same pattern as EMA Pivotes).
       const symbol = PineJS.Std.ticker(context);
       context.new_sym(symbol, '30');
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
-      (this as any)._context = context;
-      (this as any)._input = inputCallback;
-
       const Std = PineJS.Std;
 
       const sessionStartH = inputCallback(0);
@@ -139,16 +131,29 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
       const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
 
-      // Read 30-min HTF bar (high/low covers the full 30-min candle)
-      context.select_sym(1);
-      const htfHigh = Std.high(context);
-      const htfLow = Std.low(context);
-      context.select_sym(0);
-
-      // Use base-resolution bar time for precise session boundaries
+      // Read base-resolution bar time and OHLC BEFORE switching context
       const barHour = Std.hour(context);
       const barMinute = Std.minute(context);
       const barTotalMin = barHour * 60 + barMinute;
+      const curHigh = Std.high(context);
+      const curLow = Std.low(context);
+
+      // Read 30-min HTF bar values
+      context.select_sym(1);
+      const htfHighRaw = Std.high(context);
+      const htfLowRaw = Std.low(context);
+      context.select_sym(0);
+
+      // Wrap HTF values in new_var to materialise as base-resolution series
+      // (same pattern as EMA Pivotes: resistanceSeries = context.new_var(htfHigh))
+      const htfHighSeries = context.new_var(htfHighRaw);
+      const htfLowSeries = context.new_var(htfLowRaw);
+
+      // Use HTF values if valid, otherwise fall back to base-resolution
+      const htfHigh = htfHighSeries.get(0);
+      const htfLow = htfLowSeries.get(0);
+      const useHigh = isNaN(htfHigh) || htfHigh <= 0 ? curHigh : htfHigh;
+      const useLow = isNaN(htfLow) || htfLow <= 0 ? curLow : htfLow;
 
       // Check if bar is within session
       const inSession = sessionEndTotalMin > sessionStartTotalMin
@@ -164,17 +169,13 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionJustStarted = inSession && !wasInSession;
 
       if (sessionJustStarted) {
-        // First bar of session: seed with 30-min bar's high/low
-        highVar.set(htfHigh);
-        lowVar.set(htfLow);
+        highVar.set(useHigh);
+        lowVar.set(useLow);
       } else if (inSession) {
-        // Subsequent bars: update running max/min with HTF values.
-        // Within the same 30-min block htfHigh/htfLow are constant,
-        // so the running max/min stays flat → no step.
         const prevH = highVar.get(1);
         const prevL = lowVar.get(1);
-        highVar.set(isNaN(prevH) ? htfHigh : Math.max(prevH, htfHigh));
-        lowVar.set(isNaN(prevL) ? htfLow : Math.min(prevL, htfLow));
+        highVar.set(isNaN(prevH) ? useHigh : Math.max(prevH, useHigh));
+        lowVar.set(isNaN(prevL) ? useLow : Math.min(prevL, useLow));
       } else {
         highVar.set(highVar.get(1));
         lowVar.set(lowVar.get(1));
