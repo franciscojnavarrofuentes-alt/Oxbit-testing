@@ -120,75 +120,95 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
 
   constructor: function () {
     (this as any).init = function (context: any, inputCallback: any) {
-      const symbol = PineJS.Std.ticker(context);
-      const htfPeriod = inputCallback(1);
-      // Request HTF data for resistance/support
-      context.new_sym(symbol, htfPeriod);
+      // No secondary symbol — HTF levels computed manually on main series
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
       // Read inputs
       const emaPeriods = inputCallback(0);
-      // inputCallback(1) = htfPeriod, already used in init
+      const htfPeriodStr = inputCallback(1); // e.g. "400" (minutes)
       const cooldownBars = inputCallback(2);
       const showPivots = inputCallback(3);
 
       const Std = PineJS.Std;
+      const htfMinutes = parseInt(htfPeriodStr, 10) || 400;
+      const htfMs = htfMinutes * 60 * 1000;
 
       // -- EMA calculation on main series --
+      // new_var #1
       const closeSeries = context.new_var(Std.close(context));
       const emaValue = Std.ema(closeSeries, emaPeriods, context);
 
-      // -- HTF Resistance/Support (request.security equivalent) --
-      // Must create new_var WHILE in select_sym(1) and use .adopt()
-      // to align the secondary series with the main timeline.
-      // Without adopt(), get(0) and get(1) return the same stale value.
-      context.select_sym(1); // switch to HTF context
-      const htfHighVar = context.new_var(Std.high(context));
-      const htfLowVar = context.new_var(Std.low(context));
-      const htfTimeVar = context.new_var(Std.time(context));
-      // adopt(timeRef, mode) aligns HTF series to main timeline
-      // mode 0 = fill forward (like barmerge.lookahead_on)
-      htfHighVar.adopt(htfTimeVar, 0);
-      htfLowVar.adopt(htfTimeVar, 0);
-      context.select_sym(0); // switch back to main context
+      // -- Manual HTF bar detection --
+      // Group main bars into HTF periods by timestamp
+      const barTime = Std.time(context);
+      const curHigh = Std.high(context);
+      const curLow = Std.low(context);
+      const htfBarId = Math.floor(barTime / htfMs);
 
-      const resistance = htfHighVar.get(0);
-      const supportVal = htfLowVar.get(0);
-      const prevResistance = htfHighVar.get(1);
-      const prevSupport = htfLowVar.get(1);
+      // new_var #2: track which HTF bar we're in
+      const htfBarIdVar = context.new_var(htfBarId);
+      const prevHtfBarId = htfBarIdVar.get(1);
+      const newHtfBar = !isNaN(prevHtfBarId) && htfBarId !== prevHtfBarId;
 
-      // -- Break line when pivot changes (original: color = Resistencia != Resistencia[1] ? na : color) --
-      // Return NaN on the bar where the level changes to create visual break
-      const resChanged = resistance !== prevResistance;
-      const supChanged = supportVal !== prevSupport;
+      // new_var #3, #4: running high/low within current HTF bar
+      const runHighVar = context.new_var(curHigh);
+      const runLowVar = context.new_var(curLow);
+
+      // new_var #5, #6: resistance/support = previous completed HTF bar's high/low
+      const resVar = context.new_var(NaN);
+      const supVar = context.new_var(NaN);
+
+      if (newHtfBar) {
+        // HTF bar boundary: save previous HTF bar's final high/low as levels
+        resVar.set(runHighVar.get(1));
+        supVar.set(runLowVar.get(1));
+        // Reset running high/low for new HTF bar
+        runHighVar.set(curHigh);
+        runLowVar.set(curLow);
+      } else {
+        // Within same HTF bar: expand running high/low, carry levels forward
+        const prevRunH = runHighVar.get(1);
+        const prevRunL = runLowVar.get(1);
+        runHighVar.set(isNaN(prevRunH) ? curHigh : Math.max(prevRunH, curHigh));
+        runLowVar.set(isNaN(prevRunL) ? curLow : Math.min(prevRunL, curLow));
+        resVar.set(resVar.get(1));
+        supVar.set(supVar.get(1));
+      }
+
+      const resistance = resVar.get(0);
+      const supportVal = supVar.get(0);
+      const prevResistance = resVar.get(1);
+      const prevSupport = supVar.get(1);
+
+      // Break line when level changes (NaN gap with plottype 7 LineWithBreaks)
+      const resChanged = !isNaN(prevResistance) && resistance !== prevResistance;
+      const supChanged = !isNaN(prevSupport) && supportVal !== prevSupport;
 
       // -- Track close and EMA for crossover detection --
+      // new_var #7, #8, #9, #10
       const closeVar = context.new_var(Std.close(context));
       const emaVar = context.new_var(emaValue);
-      const highVar = context.new_var(Std.high(context));
-      const lowVar = context.new_var(Std.low(context));
+      const highVar = context.new_var(curHigh);
+      const lowVar = context.new_var(curLow);
 
       const curClose = closeVar.get(0);
       const prevClose = closeVar.get(1);
       const curEma = emaVar.get(0);
       const prevEma = emaVar.get(1);
-      const curHigh = highVar.get(0);
       const prevHigh = highVar.get(1);
-      const curLow = lowVar.get(0);
       const prevLow = lowVar.get(1);
 
       // -- Touch detection --
-      // Original: ta.crossover(high, Resistencia) or (high >= Resistencia and high[1] < Resistencia[1])
       const touchResistance =
         (curHigh >= resistance && prevHigh < resistance) ||
         (curHigh >= resistance && prevHigh < prevResistance);
-      // Original: ta.crossunder(low, Soporte) or (low <= Soporte and low[1] > Soporte[1])
       const touchSupport =
         (curLow <= supportVal && prevLow > supportVal) ||
         (curLow <= supportVal && prevLow > prevSupport);
 
       // -- Track bars since touch --
+      // new_var #11, #12
       const touchResVar = context.new_var(0);
       const touchSupVar = context.new_var(0);
 
@@ -207,8 +227,6 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const barsSinceTouchRes = touchResVar.get(0);
       const barsSinceTouchSup = touchSupVar.get(0);
 
-      // Recently touched pivot (within cooldown bars)?
-      // Original uses touched_res[1] — check PREVIOUS bar's touch state
       const touchedRes = barsSinceTouchRes >= 1 && barsSinceTouchRes <= cooldownBars + 1;
       const touchedSup = barsSinceTouchSup >= 1 && barsSinceTouchSup <= cooldownBars + 1;
 
@@ -216,13 +234,11 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const closeBelowEma = curClose < curEma && prevClose >= prevEma;
       const closeAboveEma = curClose > curEma && prevClose <= prevEma;
 
-      // Raw conditions (original: sell_condition = touched_res[1] and close_below_ema)
       const sellConditionRaw = touchedRes && closeBelowEma;
       const buyConditionRaw = touchedSup && closeAboveEma;
 
       // Cooldown tracking
-      // Original: bars_since_sell = ta.barssince(sell_condition[1])
-      //           can_sell = bars_since_sell > 12 or na(bars_since_sell)
+      // new_var #13, #14
       const barsSinceSellVar = context.new_var(999);
       const barsSinceBuyVar = context.new_var(999);
 
@@ -242,7 +258,6 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const buySignal = barsSinceBuyVar.get(0) === 0 ? 1 : NaN;
 
       // -- Output --
-      // Break the line on pivot change (NaN creates gap with plottype 7 LineWithBreaks)
       const resPlot = showPivots ? (resChanged ? NaN : resistance) : NaN;
       const supPlot = showPivots ? (supChanged ? NaN : supportVal) : NaN;
 
