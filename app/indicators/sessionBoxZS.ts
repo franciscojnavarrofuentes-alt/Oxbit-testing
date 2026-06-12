@@ -117,6 +117,12 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     (this as any).init = function (context: any, inputCallback: any) {
       (this as any)._context = context;
       (this as any)._input = inputCallback;
+
+      // Request 30-min resolution of the same symbol.
+      // All base-resolution bars within a 30-min block will share
+      // the same high/low, drastically reducing visible "steps".
+      const symbol = PineJS.Std.ticker(context);
+      context.new_sym(symbol, '30');
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
@@ -133,12 +139,16 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
       const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
 
+      // Read 30-min HTF bar (high/low covers the full 30-min candle)
+      context.select_sym(1);
+      const htfHigh = Std.high(context);
+      const htfLow = Std.low(context);
+      context.select_sym(0);
+
+      // Use base-resolution bar time for precise session boundaries
       const barHour = Std.hour(context);
       const barMinute = Std.minute(context);
       const barTotalMin = barHour * 60 + barMinute;
-
-      const curHigh = Std.high(context);
-      const curLow = Std.low(context);
 
       // Check if bar is within session
       const inSession = sessionEndTotalMin > sessionStartTotalMin
@@ -154,13 +164,17 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const sessionJustStarted = inSession && !wasInSession;
 
       if (sessionJustStarted) {
-        highVar.set(curHigh);
-        lowVar.set(curLow);
+        // First bar of session: seed with 30-min bar's high/low
+        highVar.set(htfHigh);
+        lowVar.set(htfLow);
       } else if (inSession) {
+        // Subsequent bars: update running max/min with HTF values.
+        // Within the same 30-min block htfHigh/htfLow are constant,
+        // so the running max/min stays flat → no step.
         const prevH = highVar.get(1);
         const prevL = lowVar.get(1);
-        highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
-        lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
+        highVar.set(isNaN(prevH) ? htfHigh : Math.max(prevH, htfHigh));
+        lowVar.set(isNaN(prevL) ? htfLow : Math.min(prevL, htfLow));
       } else {
         highVar.set(highVar.get(1));
         lowVar.set(lowVar.get(1));
