@@ -158,16 +158,18 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
         : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      // Get the HTF bar's high/low — for historical data, this is the
-      // FINAL high/low of the entire 90-min bar, so all 5-min bars
-      // within the session see the SAME values → flat lines
+      // Get the HTF bar's high/low — wrap in new_var to create a proper
+      // per-bar series (same pattern as EMA pivotes indicator)
       context.select_sym(1);
       const htfHigh = Std.high(context);
       const htfLow = Std.low(context);
       context.select_sym(0);
 
+      const highSeries = context.new_var(htfHigh);
+      const lowSeries = context.new_var(htfLow);
+
       if (inSession) {
-        return [htfHigh, htfLow];
+        return [highSeries.get(0), lowSeries.get(0)];
       }
 
       return [NaN, NaN];
