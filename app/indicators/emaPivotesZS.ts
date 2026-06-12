@@ -1,15 +1,15 @@
-// EMA y Pivotes ZS Strategy v5
-// Muestra EMA, múltiples niveles de soporte/resistencia por pivotes de HTF,
+// EMA y Pivotes ZS Strategy v4
+// Muestra EMA (step line), niveles de soporte/resistencia por pivotes de HTF,
 // y señales BUY/SELL cuando el precio toca un pivote y cruza la EMA.
 // Basado en el indicador Pine Script de @ZCoinTV y @ScottFDX
 
 export const createEmaPivotesIndicator = (PineJS: any): any => ({
-  name: 'EMA y Pivotes ZS v5',
+  name: 'EMA y Pivotes ZS v4',
   metainfo: {
     _metainfoVersion: 51,
     id: 'EmaPivotesZS@tv-basicstudies-1',
-    name: 'EMA y Pivotes ZS v5',
-    description: 'EMA y Pivotes ZS Strategy v5',
+    name: 'EMA y Pivotes ZS v4',
+    description: 'EMA y Pivotes ZS Strategy v4',
     shortDescription: 'EMA Pivotes ZS',
 
     is_price_study: true,
@@ -22,12 +22,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
 
     plots: [
       { id: 'ema_line', type: 'line' },
-      { id: 'resistance1', type: 'line' },
-      { id: 'resistance2', type: 'line' },
-      { id: 'resistance3', type: 'line' },
-      { id: 'support1', type: 'line' },
-      { id: 'support2', type: 'line' },
-      { id: 'support3', type: 'line' },
+      { id: 'resistance', type: 'line' },
+      { id: 'support', type: 'line' },
       { id: 'sell_signal', type: 'shapes' },
       { id: 'buy_signal', type: 'shapes' },
     ],
@@ -37,71 +33,39 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema_line: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0, // smooth line (curve)
+          plottype: 6, // step line (original: plot.style_stepline)
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
         },
-        resistance1: {
+        resistance: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line
+          plottype: 7, // LineWithBreaks (breaks on NaN to create separate segments)
           trackPrice: false,
           transparency: 0,
           color: '#BA160C',
         },
-        resistance2: {
+        support: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6,
-          trackPrice: false,
-          transparency: 30,
-          color: '#BA160C',
-        },
-        resistance3: {
-          linestyle: 0,
-          linewidth: 1,
-          plottype: 6,
-          trackPrice: false,
-          transparency: 60,
-          color: '#BA160C',
-        },
-        support1: {
-          linestyle: 0,
-          linewidth: 2,
-          plottype: 6, // step line
+          plottype: 7, // LineWithBreaks
           trackPrice: false,
           transparency: 0,
-          color: '#FFEC00',
-        },
-        support2: {
-          linestyle: 0,
-          linewidth: 2,
-          plottype: 6,
-          trackPrice: false,
-          transparency: 30,
-          color: '#FFEC00',
-        },
-        support3: {
-          linestyle: 0,
-          linewidth: 1,
-          plottype: 6,
-          trackPrice: false,
-          transparency: 60,
           color: '#FFEC00',
         },
         sell_signal: {
           color: '#BA160C',
-          plottype: 'shape_diamond',
+          plottype: 'shape_label_down',
           location: 'AboveBar',
-          size: 'small',
+          size: 'normal',
           text: '',
         },
         buy_signal: {
           color: '#FFEC00',
-          plottype: 'shape_diamond',
+          plottype: 'shape_label_up',
           location: 'BelowBar',
-          size: 'small',
+          size: 'normal',
           text: '',
         },
       },
@@ -116,12 +80,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
 
     styles: {
       ema_line: { title: 'EMA', histogramBase: 0 },
-      resistance1: { title: 'Resistance 1', histogramBase: 0 },
-      resistance2: { title: 'Resistance 2', histogramBase: 0 },
-      resistance3: { title: 'Resistance 3', histogramBase: 0 },
-      support1: { title: 'Support 1', histogramBase: 0 },
-      support2: { title: 'Support 2', histogramBase: 0 },
-      support3: { title: 'Support 3', histogramBase: 0 },
+      resistance: { title: 'Resistance', histogramBase: 0 },
+      support: { title: 'Support', histogramBase: 0 },
       sell_signal: { title: 'SELL Signal' },
       buy_signal: { title: 'BUY Signal' },
     },
@@ -169,7 +129,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
     (this as any).main = function (context: any, inputCallback: any) {
       // Read inputs
       const emaPeriods = inputCallback(0);
-      const htfPeriod = inputCallback(1);
+      // inputCallback(1) = htfPeriod, already used in init
       const cooldownBars = inputCallback(2);
       const showPivots = inputCallback(3);
 
@@ -190,43 +150,13 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
 
       const resistance = resistanceSeries.get(0);
       const supportVal = supportSeries.get(0);
-
-      // -- Track previous pivot levels (shift when HTF bar changes) --
-      const res1Var = context.new_var(NaN);
-      const res2Var = context.new_var(NaN);
-      const res3Var = context.new_var(NaN);
-      const sup1Var = context.new_var(NaN);
-      const sup2Var = context.new_var(NaN);
-      const sup3Var = context.new_var(NaN);
-
       const prevResistance = resistanceSeries.get(1);
       const prevSupport = supportSeries.get(1);
 
-      // Detect when HTF bar changes (new pivot level)
-      const resChanged = resistance !== prevResistance && !isNaN(prevResistance);
-      const supChanged = supportVal !== prevSupport && !isNaN(prevSupport);
-
-      // Shift resistance levels when a new HTF high appears
-      if (resChanged) {
-        res3Var.set(res2Var.get(1));
-        res2Var.set(res1Var.get(1));
-        res1Var.set(resistance);
-      } else {
-        res1Var.set(isNaN(res1Var.get(1)) ? resistance : res1Var.get(1));
-        res2Var.set(res2Var.get(1));
-        res3Var.set(res3Var.get(1));
-      }
-
-      // Shift support levels when a new HTF low appears
-      if (supChanged) {
-        sup3Var.set(sup2Var.get(1));
-        sup2Var.set(sup1Var.get(1));
-        sup1Var.set(supportVal);
-      } else {
-        sup1Var.set(isNaN(sup1Var.get(1)) ? supportVal : sup1Var.get(1));
-        sup2Var.set(sup2Var.get(1));
-        sup3Var.set(sup3Var.get(1));
-      }
+      // -- Break line when pivot changes (original: color = Resistencia != Resistencia[1] ? na : color) --
+      // Return NaN on the bar where the level changes to create visual break
+      const resChanged = resistance !== prevResistance;
+      const supChanged = supportVal !== prevSupport;
 
       // -- Track close and EMA for crossover detection --
       const closeVar = context.new_var(Std.close(context));
@@ -243,21 +173,15 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const curLow = lowVar.get(0);
       const prevLow = lowVar.get(1);
 
-      // -- Touch detection (check against ALL resistance/support levels) --
-      const r1 = res1Var.get(0);
-      const r2 = res2Var.get(0);
-      const r3 = res3Var.get(0);
-      const s1 = sup1Var.get(0);
-      const s2 = sup2Var.get(0);
-      const s3 = sup3Var.get(0);
-
-      const touchesRes = (level: number) =>
-        !isNaN(level) && curHigh >= level && prevHigh < level;
-      const touchesSup = (level: number) =>
-        !isNaN(level) && curLow <= level && prevLow > level;
-
-      const touchResistance = touchesRes(r1) || touchesRes(r2) || touchesRes(r3);
-      const touchSupport = touchesSup(s1) || touchesSup(s2) || touchesSup(s3);
+      // -- Touch detection --
+      // Original: ta.crossover(high, Resistencia) or (high >= Resistencia and high[1] < Resistencia[1])
+      const touchResistance =
+        (curHigh >= resistance && prevHigh < resistance) ||
+        (curHigh >= resistance && prevHigh < prevResistance);
+      // Original: ta.crossunder(low, Soporte) or (low <= Soporte and low[1] > Soporte[1])
+      const touchSupport =
+        (curLow <= supportVal && prevLow > supportVal) ||
+        (curLow <= supportVal && prevLow > prevSupport);
 
       // -- Track bars since touch --
       const touchResVar = context.new_var(0);
@@ -279,28 +203,31 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const barsSinceTouchSup = touchSupVar.get(0);
 
       // Recently touched pivot (within cooldown bars)?
-      const touchedRes = barsSinceTouchRes <= cooldownBars;
-      const touchedSup = barsSinceTouchSup <= cooldownBars;
+      // Original uses touched_res[1] — check PREVIOUS bar's touch state
+      const touchedRes = barsSinceTouchRes >= 1 && barsSinceTouchRes <= cooldownBars + 1;
+      const touchedSup = barsSinceTouchSup >= 1 && barsSinceTouchSup <= cooldownBars + 1;
 
       // EMA crossover/crossunder
       const closeBelowEma = curClose < curEma && prevClose >= prevEma;
       const closeAboveEma = curClose > curEma && prevClose <= prevEma;
 
-      // Raw conditions
+      // Raw conditions (original: sell_condition = touched_res[1] and close_below_ema)
       const sellConditionRaw = touchedRes && closeBelowEma;
       const buyConditionRaw = touchedSup && closeAboveEma;
 
       // Cooldown tracking
+      // Original: bars_since_sell = ta.barssince(sell_condition[1])
+      //           can_sell = bars_since_sell > 12 or na(bars_since_sell)
       const barsSinceSellVar = context.new_var(999);
       const barsSinceBuyVar = context.new_var(999);
 
-      if (sellConditionRaw && barsSinceSellVar.get(0) > cooldownBars) {
+      if (sellConditionRaw && barsSinceSellVar.get(1) > cooldownBars) {
         barsSinceSellVar.set(0);
       } else {
         barsSinceSellVar.set((barsSinceSellVar.get(1) || 0) + 1);
       }
 
-      if (buyConditionRaw && barsSinceBuyVar.get(0) > cooldownBars) {
+      if (buyConditionRaw && barsSinceBuyVar.get(1) > cooldownBars) {
         barsSinceBuyVar.set(0);
       } else {
         barsSinceBuyVar.set((barsSinceBuyVar.get(1) || 0) + 1);
@@ -310,17 +237,11 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const buySignal = barsSinceBuyVar.get(0) === 0 ? 1 : NaN;
 
       // -- Output --
-      return [
-        emaValue,
-        showPivots ? r1 : NaN,
-        showPivots ? r2 : NaN,
-        showPivots ? r3 : NaN,
-        showPivots ? s1 : NaN,
-        showPivots ? s2 : NaN,
-        showPivots ? s3 : NaN,
-        sellSignal,
-        buySignal,
-      ];
+      // Break the line on pivot change (NaN creates gap with plottype 7 LineWithBreaks)
+      const resPlot = showPivots ? (resChanged ? NaN : resistance) : NaN;
+      const supPlot = showPivots ? (supChanged ? NaN : supportVal) : NaN;
+
+      return [emaValue, resPlot, supPlot, sellSignal, buySignal];
     };
   },
 });
