@@ -58,7 +58,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 0,
+          plottype: 6,
           trackPrice: false,
           transparency: 0,
           color: '#ffffff',
