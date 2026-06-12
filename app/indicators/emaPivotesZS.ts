@@ -42,7 +42,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         resistencia: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line — flat horizontal segments
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
           color: '#ba160c',
@@ -50,7 +50,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         soporte: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line — flat horizontal segments
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
           color: '#ffec00',
@@ -58,7 +58,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         ema: {
           linestyle: 0,
           linewidth: 2,
-          plottype: 6, // step line (original: plot.style_stepline)
+          plottype: 0,
           trackPrice: false,
           transparency: 0,
           color: '#ffffff',
@@ -125,6 +125,8 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       // request.security(syminfo.tickerid, Periodos, ...)
       (this as any)._context.new_sym(symbol, pivotResolution);
 
+      (this as any)._lastResValue = undefined;
+      (this as any)._lastSupValue = undefined;
       (this as any)._lastTouchRes = undefined;
       (this as any)._lastTouchSup = undefined;
       (this as any)._barsSinceSell = undefined;
@@ -190,9 +192,9 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         PineJS.Std.low((this as any)._context)
       );
 
-      // adopt(secondaryTime, mainTime, 0) — mode 0 = continuous (fill forward)
-      const adoptedRes = pivotHighSeries.adopt(pivotTime, mainTime, 0);
-      const adoptedSup = pivotLowSeries.adopt(pivotTime, mainTime, 0);
+      // adopt(secondaryTime, mainTime, 1) — mode 1 = precise
+      const adoptedRes = pivotHighSeries.adopt(pivotTime, mainTime, 1);
+      const adoptedSup = pivotLowSeries.adopt(pivotTime, mainTime, 1);
 
       // Back to main symbol
       (this as any)._context.select_sym(0);
