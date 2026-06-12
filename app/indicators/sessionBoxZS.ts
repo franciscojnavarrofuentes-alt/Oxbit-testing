@@ -1,6 +1,6 @@
 // ZS Indicador Caja - Aperturas
 // Muestra cajas de sesión (apertura NY) con máximos y mínimos del rango.
-// Basado en el indicador Pine Script "Sessions ZS"
+// Los inputs están en hora de Nueva York (gestiona DST automáticamente).
 
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
@@ -65,9 +65,9 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       precision: 2,
       inputs: {
-        sessionStart: 13,
+        sessionStart: 9,
         sessionStartMin: 30,
-        sessionEnd: 15,
+        sessionEnd: 11,
         sessionEndMin: 0,
       },
     },
@@ -80,15 +80,15 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     inputs: [
       {
         id: 'sessionStart',
-        name: 'Session Start Hour',
+        name: 'Session Start Hour (NY)',
         type: 'integer',
-        defval: 13,
+        defval: 9,
         min: 0,
         max: 23,
       },
       {
         id: 'sessionStartMin',
-        name: 'Session Start Minute',
+        name: 'Session Start Minute (NY)',
         type: 'integer',
         defval: 30,
         min: 0,
@@ -96,15 +96,15 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       {
         id: 'sessionEnd',
-        name: 'Session End Hour',
+        name: 'Session End Hour (NY)',
         type: 'integer',
-        defval: 15,
+        defval: 11,
         min: 0,
         max: 23,
       },
       {
         id: 'sessionEndMin',
-        name: 'Session End Minute',
+        name: 'Session End Minute (NY)',
         type: 'integer',
         defval: 0,
         min: 0,
@@ -115,79 +115,69 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
   constructor: function () {
     (this as any).init = function (context: any, inputCallback: any) {
-      // Request 30-min resolution of the same symbol (same pattern as EMA Pivotes).
-      const symbol = PineJS.Std.ticker(context);
-      context.new_sym(symbol, '30');
+      // Formatter to convert bar timestamp to NY time (handles DST automatically)
+      (this as any)._nyTime = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/New_York',
+        hour: '2-digit',
+        minute: '2-digit',
+        hourCycle: 'h23',
+      });
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
       const Std = PineJS.Std;
 
-      const sessionStartH = inputCallback(0);
-      const sessionStartM = inputCallback(1);
-      const sessionEndH = inputCallback(2);
-      const sessionEndM = inputCallback(3);
+      // Create state variables ALWAYS, in the same order, before any early return
+      const highVar = context.new_var();
+      const lowVar = context.new_var();
+      const inSessionVar = context.new_var();
 
-      const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
-      const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
+      // Only makes sense on intraday resolutions
+      if (!Std.isintraday(context)) {
+        return [NaN, NaN];
+      }
 
-      // Read base-resolution bar time and OHLC BEFORE switching context
-      const barHour = Std.hour(context);
-      const barMinute = Std.minute(context);
-      const barTotalMin = barHour * 60 + barMinute;
+      // Inputs in New York time (defaults: 9:30 – 11:00)
+      const sessionStartTotalMin = inputCallback(0) * 60 + inputCallback(1);
+      const sessionEndTotalMin = inputCallback(2) * 60 + inputCallback(3);
+
+      // Convert bar time to NY timezone
+      const barTime = context.symbol.time;
+      if (!barTime || isNaN(barTime)) {
+        return [NaN, NaN];
+      }
+      const parts = (this as any)._nyTime.formatToParts(new Date(barTime));
+      const h = Number(parts.find((p: any) => p.type === 'hour').value);
+      const m = Number(parts.find((p: any) => p.type === 'minute').value);
+      const barTotalMin = h * 60 + m;
+
+      const inSession =
+        sessionEndTotalMin > sessionStartTotalMin
+          ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
+          : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
+
+      const wasInSession = inSessionVar.get(1) === 1;
+      inSessionVar.set(inSession ? 1 : 0);
+
       const curHigh = Std.high(context);
       const curLow = Std.low(context);
 
-      // Read 30-min HTF bar values
-      context.select_sym(1);
-      const htfHighRaw = Std.high(context);
-      const htfLowRaw = Std.low(context);
-      context.select_sym(0);
-
-      // Wrap HTF values in new_var to materialise as base-resolution series
-      // (same pattern as EMA Pivotes: resistanceSeries = context.new_var(htfHigh))
-      const htfHighSeries = context.new_var(htfHighRaw);
-      const htfLowSeries = context.new_var(htfLowRaw);
-
-      // Use HTF values if valid, otherwise fall back to base-resolution
-      const htfHigh = htfHighSeries.get(0);
-      const htfLow = htfLowSeries.get(0);
-      const useHigh = isNaN(htfHigh) || htfHigh <= 0 ? curHigh : htfHigh;
-      const useLow = isNaN(htfLow) || htfLow <= 0 ? curLow : htfLow;
-
-      // Check if bar is within session
-      const inSession = sessionEndTotalMin > sessionStartTotalMin
-        ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
-        : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
-
-      // State variables — use get(1) to read previous bar's .set() value
-      const highVar = context.new_var(NaN);
-      const lowVar = context.new_var(NaN);
-      const inSessionVar = context.new_var(0);
-
-      const wasInSession = inSessionVar.get(1) === 1;
-      const sessionJustStarted = inSession && !wasInSession;
-
-      if (sessionJustStarted) {
-        highVar.set(useHigh);
-        lowVar.set(useLow);
+      if (inSession && !wasInSession) {
+        // First bar of session: reset the range
+        highVar.set(curHigh);
+        lowVar.set(curLow);
       } else if (inSession) {
         const prevH = highVar.get(1);
         const prevL = lowVar.get(1);
-        highVar.set(isNaN(prevH) ? useHigh : Math.max(prevH, useHigh));
-        lowVar.set(isNaN(prevL) ? useLow : Math.min(prevL, useLow));
+        highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
+        lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
       } else {
+        // Outside session: preserve last range
         highVar.set(highVar.get(1));
         lowVar.set(lowVar.get(1));
       }
 
-      inSessionVar.set(inSession ? 1 : 0);
-
-      if (inSession) {
-        return [highVar.get(0), lowVar.get(0)];
-      }
-
-      return [NaN, NaN];
+      return inSession ? [highVar.get(0), lowVar.get(0)] : [NaN, NaN];
     };
   },
 });
