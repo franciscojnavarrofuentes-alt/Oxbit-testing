@@ -140,18 +140,23 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       const emaValue = Std.ema(closeSeries, emaPeriods, context);
 
       // -- HTF Resistance/Support (request.security equivalent) --
+      // Must create new_var WHILE in select_sym(1) and use .adopt()
+      // to align the secondary series with the main timeline.
+      // Without adopt(), get(0) and get(1) return the same stale value.
       context.select_sym(1); // switch to HTF context
-      const htfHigh = Std.high(context);
-      const htfLow = Std.low(context);
+      const htfHighVar = context.new_var(Std.high(context));
+      const htfLowVar = context.new_var(Std.low(context));
+      const htfTimeVar = context.new_var(Std.time(context));
+      // adopt(timeRef, mode) aligns HTF series to main timeline
+      // mode 0 = fill forward (like barmerge.lookahead_on)
+      htfHighVar.adopt(htfTimeVar, 0);
+      htfLowVar.adopt(htfTimeVar, 0);
       context.select_sym(0); // switch back to main context
 
-      const resistanceSeries = context.new_var(htfHigh);
-      const supportSeries = context.new_var(htfLow);
-
-      const resistance = resistanceSeries.get(0);
-      const supportVal = supportSeries.get(0);
-      const prevResistance = resistanceSeries.get(1);
-      const prevSupport = supportSeries.get(1);
+      const resistance = htfHighVar.get(0);
+      const supportVal = htfLowVar.get(0);
+      const prevResistance = htfHighVar.get(1);
+      const prevSupport = htfLowVar.get(1);
 
       // -- Break line when pivot changes (original: color = Resistencia != Resistencia[1] ? na : color) --
       // Return NaN on the bar where the level changes to create visual break
