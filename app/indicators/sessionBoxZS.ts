@@ -1,10 +1,6 @@
 // ZS Indicador Caja - Aperturas
 // Muestra cajas de sesión (apertura NY) con máximos y mínimos del rango.
 // Basado en el indicador Pine Script "Sessions ZS"
-//
-// Uses context.new_sym() to request a higher timeframe bar that covers
-// the entire session. For historical data, each lower-timeframe bar within
-// the session sees the SAME final high/low → perfectly flat lines.
 
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
@@ -121,18 +117,6 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     (this as any).init = function (context: any, inputCallback: any) {
       (this as any)._context = context;
       (this as any)._input = inputCallback;
-
-      // Compute session duration in minutes
-      const sessionStartH = inputCallback(0);
-      const sessionStartM = inputCallback(1);
-      const sessionEndH = inputCallback(2);
-      const sessionEndM = inputCallback(3);
-      const durationMin = (sessionEndH * 60 + sessionEndM) - (sessionStartH * 60 + sessionStartM);
-
-      // Request same symbol at a resolution matching the session duration
-      // For 13:30-15:00 = 90 min → a 90-min bar starting at 13:30 covers the entire session
-      const symbol = PineJS.Std.ticker(context);
-      context.new_sym(symbol, String(durationMin));
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
@@ -153,23 +137,39 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const barMinute = Std.minute(context);
       const barTotalMin = barHour * 60 + barMinute;
 
+      const curHigh = Std.high(context);
+      const curLow = Std.low(context);
+
       // Check if bar is within session
       const inSession = sessionEndTotalMin > sessionStartTotalMin
         ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
         : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      // Get the HTF bar's high/low — wrap in new_var to create a proper
-      // per-bar series (same pattern as EMA pivotes indicator)
-      context.select_sym(1);
-      const htfHigh = Std.high(context);
-      const htfLow = Std.low(context);
-      context.select_sym(0);
+      // State variables — use get(1) to read previous bar's .set() value
+      const highVar = context.new_var(NaN);
+      const lowVar = context.new_var(NaN);
+      const inSessionVar = context.new_var(0);
 
-      const highSeries = context.new_var(htfHigh);
-      const lowSeries = context.new_var(htfLow);
+      const wasInSession = inSessionVar.get(1) === 1;
+      const sessionJustStarted = inSession && !wasInSession;
+
+      if (sessionJustStarted) {
+        highVar.set(curHigh);
+        lowVar.set(curLow);
+      } else if (inSession) {
+        const prevH = highVar.get(1);
+        const prevL = lowVar.get(1);
+        highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
+        lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
+      } else {
+        highVar.set(highVar.get(1));
+        lowVar.set(lowVar.get(1));
+      }
+
+      inSessionVar.set(inSession ? 1 : 0);
 
       if (inSession) {
-        return [highSeries.get(0), lowSeries.get(0)];
+        return [highVar.get(0), lowVar.get(0)];
       }
 
       return [NaN, NaN];
