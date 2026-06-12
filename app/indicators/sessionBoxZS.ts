@@ -1,6 +1,6 @@
 // ZS Indicador Caja - Aperturas
 // Muestra cajas de sesión (apertura NY) con máximos y mínimos del rango.
-// Los inputs están en hora de Nueva York (gestiona DST automáticamente).
+// Basado en el indicador Pine Script "Sessions ZS"
 
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
@@ -41,7 +41,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
           linestyle: 0,
           visible: true,
           linewidth: 1,
-          plottype: 11, // StepLineWithBreaks
+          plottype: 11, // StepLineWithBreaks: flat horizontal + breaks on NaN
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
@@ -65,9 +65,9 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       precision: 2,
       inputs: {
-        sessionStart: 9,
+        sessionStart: 13,
         sessionStartMin: 30,
-        sessionEnd: 11,
+        sessionEnd: 15,
         sessionEndMin: 0,
       },
     },
@@ -80,15 +80,15 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
     inputs: [
       {
         id: 'sessionStart',
-        name: 'Session Start Hour (NY)',
+        name: 'Session Start Hour',
         type: 'integer',
-        defval: 9,
+        defval: 13,
         min: 0,
         max: 23,
       },
       {
         id: 'sessionStartMin',
-        name: 'Session Start Minute (NY)',
+        name: 'Session Start Minute',
         type: 'integer',
         defval: 30,
         min: 0,
@@ -96,15 +96,15 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       {
         id: 'sessionEnd',
-        name: 'Session End Hour (NY)',
+        name: 'Session End Hour',
         type: 'integer',
-        defval: 11,
+        defval: 15,
         min: 0,
         max: 23,
       },
       {
         id: 'sessionEndMin',
-        name: 'Session End Minute (NY)',
+        name: 'Session End Minute',
         type: 'integer',
         defval: 0,
         min: 0,
@@ -115,48 +115,43 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
   constructor: function () {
     (this as any).init = function (context: any, inputCallback: any) {
-      // Formatter to convert bar timestamp to NY time (handles DST automatically)
-      (this as any)._nyTime = new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'America/New_York',
-        hour: '2-digit',
-        minute: '2-digit',
-        hourCycle: 'h23',
-      });
+      (this as any)._context = context;
+      (this as any)._input = inputCallback;
     };
 
     (this as any).main = function (context: any, inputCallback: any) {
+      (this as any)._context = context;
+      (this as any)._input = inputCallback;
+
       const Std = PineJS.Std;
 
-      // Create state variables ALWAYS, in the same order, before any early return
-      const highVar = context.new_var(NaN);
-      const lowVar = context.new_var(NaN);
-      const inSessionVar = context.new_var(0);
+      const sessionStartH = inputCallback(0);
+      const sessionStartM = inputCallback(1);
+      const sessionEndH = inputCallback(2);
+      const sessionEndM = inputCallback(3);
 
-      if (!Std.isintraday(context)) {
-        return [NaN, NaN];
-      }
+      const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
+      const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
 
-      const sessionStartTotalMin = inputCallback(0) * 60 + inputCallback(1);
-      const sessionEndTotalMin = inputCallback(2) * 60 + inputCallback(3);
-
-      // Convert bar time to NY timezone using Std.time (Unix ms UTC)
-      const barTime = Std.time(context);
-      if (!barTime || isNaN(barTime)) {
-        return [NaN, NaN];
-      }
-      const parts = (this as any)._nyTime.formatToParts(new Date(barTime));
-      const h = Number(parts.find((p: any) => p.type === 'hour').value);
-      const m = Number(parts.find((p: any) => p.type === 'minute').value);
-      const barTotalMin = h * 60 + m;
+      // Use PineJS Std.hour and Std.minute to get the bar's exchange time
+      const barHour = Std.hour(context);
+      const barMinute = Std.minute(context);
+      const barTotalMin = barHour * 60 + barMinute;
 
       const curHigh = Std.high(context);
       const curLow = Std.low(context);
 
       // Check if bar is within session
-      const inSession =
-        sessionEndTotalMin > sessionStartTotalMin
-          ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
-          : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
+      const inSession = sessionEndTotalMin > sessionStartTotalMin
+        ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
+        : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
+
+      // State variables — use get(1) for previous bar's value
+      // (new_var(init) sets current bar to init, so get(0) returns init,
+      //  but get(1) returns the previous bar's final .set() value)
+      const highVar = context.new_var(NaN);
+      const lowVar = context.new_var(NaN);
+      const inSessionVar = context.new_var(0);
 
       // Previous bar's session state
       const wasInSession = inSessionVar.get(1) === 1;
