@@ -2,8 +2,9 @@
 // Draws perfect rectangles for trading sessions using TradingView's
 // createMultipointShape API instead of PineJS plots (which produce staircases).
 //
-// Usage: call installSessionBoxDrawer() before the TradingView widget is created.
-// It intercepts the widget constructor and draws session boxes on chart ready.
+// Two strategies:
+// 1. Proxy: intercept TradingView.widget constructor (if we patch before it's called)
+// 2. Polling: find the widget iframe and access the chart API directly
 
 interface SessionBox {
   startTime: number; // Unix seconds
@@ -12,8 +13,9 @@ interface SessionBox {
   low: number;
 }
 
-// Track drawn shape IDs per chart for cleanup
-const drawnShapes: string[] = [];
+// Track drawn shape IDs for cleanup
+let drawnShapes: any[] = [];
+let currentChart: any = null;
 
 // Session config (UTC hours/minutes)
 const SESSION_START_HOUR = 14;
@@ -25,24 +27,16 @@ const SESSION_START_TOTAL = SESSION_START_HOUR * 60 + SESSION_START_MIN;
 const SESSION_END_TOTAL = SESSION_END_HOUR * 60 + SESSION_END_MIN;
 
 function computeSessions(
-  data: { schema: any[]; data: any[] },
-  useUserTime: boolean
+  data: { schema: any[]; data: any[] }
 ): SessionBox[] {
   const sessions: SessionBox[] = [];
   let current: SessionBox | null = null;
 
-  // Find time column index
+  // Find column indices
   const timeIdx = data.schema.findIndex(
     (s: any) => s.type === 'time' || s.type === 'userTime'
   );
-  // Series columns: open, high, low, close (after time)
-  const seriesStart = data.schema.findIndex(
-    (s: any) => s.type === 'value' && s.sourceType === 'series'
-  );
 
-  if (timeIdx === -1 || seriesStart === -1) return sessions;
-
-  // Find high and low column indices
   let highIdx = -1;
   let lowIdx = -1;
   data.schema.forEach((s: any, i: number) => {
@@ -52,16 +46,18 @@ function computeSessions(
     }
   });
 
-  if (highIdx === -1 || lowIdx === -1) return sessions;
+  if (timeIdx === -1 || highIdx === -1 || lowIdx === -1) {
+    console.warn('[SessionBoxDrawer] Could not find time/high/low columns in schema:', data.schema);
+    return sessions;
+  }
 
   for (const row of data.data) {
-    const timestamp = row[timeIdx]; // Unix seconds
+    const timestamp = row[timeIdx];
     const high = row[highIdx];
     const low = row[lowIdx];
 
     if (isNaN(high) || isNaN(low)) continue;
 
-    // Convert to UTC date to check session window
     const date = new Date(timestamp * 1000);
     const utcMin = date.getUTCHours() * 60 + date.getUTCMinutes();
 
@@ -85,6 +81,7 @@ function computeSessions(
   }
 
   if (current) sessions.push(current);
+  console.log(`[SessionBoxDrawer] Found ${sessions.length} sessions`);
   return sessions;
 }
 
@@ -92,11 +89,9 @@ function clearShapes(chart: any) {
   for (const id of drawnShapes) {
     try {
       chart.removeEntity(id);
-    } catch (_) {
-      // Shape may already be removed
-    }
+    } catch (_) {}
   }
-  drawnShapes.length = 0;
+  drawnShapes = [];
 }
 
 async function drawSessionBoxes(chart: any) {
@@ -106,7 +101,10 @@ async function drawSessionBoxes(chart: any) {
       includedStudies: [],
     });
 
-    const sessions = computeSessions(data, false);
+    console.log('[SessionBoxDrawer] exportData schema:', data.schema?.map((s: any) => s.plotTitle || s.type));
+    console.log('[SessionBoxDrawer] exportData rows:', data.data?.length);
+
+    const sessions = computeSessions(data);
 
     for (const session of sessions) {
       const id = chart.createMultipointShape(
@@ -129,8 +127,13 @@ async function drawSessionBoxes(chart: any) {
           },
         }
       );
-      if (id != null) drawnShapes.push(id);
+      if (id != null) {
+        drawnShapes.push(id);
+      } else {
+        console.warn('[SessionBoxDrawer] createMultipointShape returned null for session', session);
+      }
     }
+    console.log(`[SessionBoxDrawer] Drew ${drawnShapes.length} boxes`);
   } catch (e) {
     console.warn('[SessionBoxDrawer] Failed to draw session boxes:', e);
   }
@@ -141,54 +144,121 @@ async function redraw(chart: any) {
   await drawSessionBoxes(chart);
 }
 
+function hookIntoChart(chart: any) {
+  if (currentChart === chart) return; // Already hooked
+  currentChart = chart;
+
+  console.log('[SessionBoxDrawer] Hooked into chart, drawing initial boxes...');
+
+  // Initial draw — wait a bit for data to be ready
+  setTimeout(() => redraw(chart), 1000);
+
+  // Redraw on data loaded (scroll/zoom loads more bars)
+  try {
+    chart.onDataLoaded().subscribe(null, () => redraw(chart));
+  } catch (_) {}
+
+  // Redraw on symbol change
+  try {
+    chart.onSymbolChanged().subscribe(null, () => {
+      setTimeout(() => redraw(chart), 1000);
+    });
+  } catch (_) {}
+
+  // Redraw on interval change
+  try {
+    chart.onIntervalChanged().subscribe(null, () => {
+      setTimeout(() => redraw(chart), 1000);
+    });
+  } catch (_) {}
+}
+
 /**
  * Install the session box drawer.
- * Call this once before the TradingView widget is created.
- * It patches the TradingView.widget constructor to hook into onChartReady.
+ * Uses two strategies:
+ * 1. Try to Proxy TradingView.widget before it's constructed
+ * 2. Poll for an existing widget instance via the iframe
  */
 export function installSessionBoxDrawer() {
   if (typeof window === 'undefined') return;
   if ((window as any).__SESSION_BOX_INSTALLED__) return;
+  (window as any).__SESSION_BOX_INSTALLED__ = true;
 
-  const waitForTV = setInterval(() => {
+  console.log('[SessionBoxDrawer] Installing...');
+
+  // Strategy 1: Proxy the constructor (works if we're early enough)
+  const tryProxy = setInterval(() => {
     const TV = (window as any).TradingView;
-    if (!TV?.widget) return;
+    if (!TV?.widget || (window as any).__TV_WIDGET_PROXIED__) return;
+    clearInterval(tryProxy);
 
-    // Only patch once
-    if ((window as any).__TV_WIDGET_ORIG__) return;
-    clearInterval(waitForTV);
-
+    console.log('[SessionBoxDrawer] Proxying TradingView.widget constructor');
     const OrigWidget = TV.widget;
-    (window as any).__TV_WIDGET_ORIG__ = OrigWidget;
+    (window as any).__TV_WIDGET_PROXIED__ = true;
 
     TV.widget = new Proxy(OrigWidget, {
-      construct(Target: any, args: any[]) {
-        const instance = Reflect.construct(Target, args);
+      construct(Target: any, args: any[], newTarget: Function): object {
+        const instance: any = Reflect.construct(Target, args, newTarget);
+        console.log('[SessionBoxDrawer] Widget constructed via Proxy');
+
+        // Store instance globally for Strategy 2 fallback
+        (window as any).__TV_WIDGET_INSTANCE__ = instance;
 
         instance.onChartReady(() => {
-          const chart = instance.activeChart();
-
-          // Initial draw
-          redraw(chart);
-
-          // Redraw on data loaded (scroll/zoom loads more bars)
-          chart.onDataLoaded().subscribe(null, () => redraw(chart));
-
-          // Redraw on symbol change
-          chart.onSymbolChanged().subscribe(null, () => {
-            setTimeout(() => redraw(chart), 500);
-          });
-
-          // Redraw on interval change
-          chart.onIntervalChanged().subscribe(null, () => {
-            setTimeout(() => redraw(chart), 500);
-          });
+          console.log('[SessionBoxDrawer] Chart ready (via Proxy)');
+          hookIntoChart(instance.activeChart());
         });
 
         return instance;
       },
     });
+  }, 50);
 
-    (window as any).__SESSION_BOX_INSTALLED__ = true;
-  }, 200);
+  // Strategy 2: Poll for widget instance (fallback if Proxy was too late)
+  const pollForWidget = setInterval(() => {
+    // Check if we already have a chart hooked
+    if (currentChart) {
+      clearInterval(pollForWidget);
+      return;
+    }
+
+    // Check for widget instance stored by Proxy
+    const instance = (window as any).__TV_WIDGET_INSTANCE__;
+    if (instance) {
+      try {
+        instance.onChartReady(() => {
+          console.log('[SessionBoxDrawer] Chart ready (via poll, stored instance)');
+          hookIntoChart(instance.activeChart());
+        });
+        clearInterval(pollForWidget);
+        return;
+      } catch (_) {}
+    }
+
+    // Check for widget via iframe - TradingView creates iframes with specific IDs
+    const iframes = document.querySelectorAll('iframe[id^="tradingview"]');
+    if (iframes.length > 0) {
+      // The widget might be accessible through the iframe's parent element
+      const container = iframes[0]?.parentElement;
+      if (container && (container as any).__widget) {
+        const widget = (container as any).__widget;
+        try {
+          widget.onChartReady(() => {
+            console.log('[SessionBoxDrawer] Chart ready (via iframe)');
+            hookIntoChart(widget.activeChart());
+          });
+          clearInterval(pollForWidget);
+        } catch (_) {}
+      }
+    }
+  }, 500);
+
+  // Stop polling after 30s
+  setTimeout(() => {
+    clearInterval(tryProxy);
+    clearInterval(pollForWidget);
+    if (!currentChart) {
+      console.warn('[SessionBoxDrawer] Could not find TradingView widget after 30s');
+    }
+  }, 30000);
 }
