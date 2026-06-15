@@ -159,14 +159,24 @@ function isHeartbeatActive(): boolean {
   return _heartbeat > 0 && Date.now() - _heartbeat < 30000;
 }
 
+let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
 function hookIntoChart(chart: any) {
-  if (currentChart === chart) return; // Already hooked
+  if (currentChart === chart) return; // Already hooked to this exact chart
+
+  // New chart replaces old — clean up previous state
+  if (currentChart && boxesDrawn) {
+    clearShapes(currentChart);
+    boxesDrawn = false;
+  }
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+
   currentChart = chart;
 
   console.log('[SessionBoxDrawer] Hooked into chart, waiting for indicator heartbeat...');
 
   // Heartbeat toggle: check every 2s if the indicator is active
-  setInterval(() => {
+  heartbeatInterval = setInterval(() => {
     const active = isHeartbeatActive();
     if (active && !boxesDrawn) {
       console.log('[SessionBoxDrawer] Indicator active, drawing boxes...');
@@ -206,16 +216,12 @@ function onWidgetCreated(instance: any) {
 
   // Poll activeChart() — more reliable than onChartReady
   const poll = setInterval(() => {
-    if (currentChart) {
-      clearInterval(poll);
-      return;
-    }
     try {
       const chart = instance.activeChart();
       if (chart) {
         console.log('[SessionBoxDrawer] Chart found via activeChart() poll');
         clearInterval(poll);
-        hookIntoChart(chart);
+        hookIntoChart(chart); // handles re-hooking if chart changed
       }
     } catch (_) {}
   }, 500);
@@ -223,7 +229,6 @@ function onWidgetCreated(instance: any) {
   // Also try onChartReady as backup
   try {
     instance.onChartReady(() => {
-      if (currentChart) return;
       console.log('[SessionBoxDrawer] Chart ready via onChartReady');
       hookIntoChart(instance.activeChart());
     });
