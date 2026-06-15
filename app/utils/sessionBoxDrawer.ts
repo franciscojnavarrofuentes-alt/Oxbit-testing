@@ -186,32 +186,36 @@ export function installSessionBoxDrawer() {
 
   console.log('[SessionBoxDrawer] Installing...');
 
-  // Strategy 1: Proxy the constructor (works if we're early enough)
-  const tryProxy = setInterval(() => {
+  // Strategy 1: Wrap the constructor (works if we patch before it's called)
+  const tryWrap = setInterval(() => {
     const TV = (window as any).TradingView;
-    if (!TV?.widget || (window as any).__TV_WIDGET_PROXIED__) return;
-    clearInterval(tryProxy);
+    if (!TV?.widget || (window as any).__TV_WIDGET_WRAPPED__) return;
+    clearInterval(tryWrap);
 
-    console.log('[SessionBoxDrawer] Proxying TradingView.widget constructor');
+    console.log('[SessionBoxDrawer] Wrapping TradingView.widget constructor');
     const OrigWidget = TV.widget;
-    (window as any).__TV_WIDGET_PROXIED__ = true;
+    (window as any).__TV_WIDGET_WRAPPED__ = true;
 
-    TV.widget = new Proxy(OrigWidget, {
-      construct(Target: any, args: any[], newTarget: Function): object {
-        const instance: any = Reflect.construct(Target, args, newTarget);
-        console.log('[SessionBoxDrawer] Widget constructed via Proxy');
+    // Replace with a wrapper function that calls original via `new`
+    const WrappedWidget = function (this: any, ...args: any[]) {
+      const instance = new OrigWidget(...args);
+      console.log('[SessionBoxDrawer] Widget constructed via wrapper');
 
-        // Store instance globally for Strategy 2 fallback
-        (window as any).__TV_WIDGET_INSTANCE__ = instance;
+      // Store instance globally
+      (window as any).__TV_WIDGET_INSTANCE__ = instance;
 
-        instance.onChartReady(() => {
-          console.log('[SessionBoxDrawer] Chart ready (via Proxy)');
-          hookIntoChart(instance.activeChart());
-        });
+      instance.onChartReady(() => {
+        console.log('[SessionBoxDrawer] Chart ready (via wrapper)');
+        hookIntoChart(instance.activeChart());
+      });
 
-        return instance;
-      },
-    });
+      return instance;
+    } as any;
+
+    // Preserve prototype so instanceof checks work
+    WrappedWidget.prototype = OrigWidget.prototype;
+
+    TV.widget = WrappedWidget;
   }, 50);
 
   // Strategy 2: Poll for widget instance (fallback if Proxy was too late)
