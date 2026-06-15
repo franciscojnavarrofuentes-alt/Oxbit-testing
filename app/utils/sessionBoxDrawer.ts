@@ -18,9 +18,10 @@ let drawnShapes: any[] = [];
 let currentChart: any = null;
 
 // Session config (UTC hours/minutes)
-const SESSION_START_HOUR = 14;
+// 14:30–17:00 Spanish time (CEST/UTC+2) = 12:30–15:00 UTC
+const SESSION_START_HOUR = 12;
 const SESSION_START_MIN = 30;
-const SESSION_END_HOUR = 16;
+const SESSION_END_HOUR = 15;
 const SESSION_END_MIN = 0;
 
 const SESSION_START_TOTAL = SESSION_START_HOUR * 60 + SESSION_START_MIN;
@@ -259,7 +260,7 @@ export function installSessionBoxDrawer() {
 
   // Stop polling after 30s
   setTimeout(() => {
-    clearInterval(tryProxy);
+    clearInterval(tryWrap);
     clearInterval(pollForWidget);
     if (!currentChart) {
       console.warn('[SessionBoxDrawer] Could not find TradingView widget after 30s');
