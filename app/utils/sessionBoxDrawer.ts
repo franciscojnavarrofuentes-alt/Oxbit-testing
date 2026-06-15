@@ -21,9 +21,7 @@ let boxesDrawn = false;
 // Heartbeat — use self (globalThis) to guarantee cross-module sharing.
 // Module-level variables can be duplicated if the bundler creates separate chunks.
 export function sessionBoxHeartbeat() {
-  const now = Date.now();
-  (self as any).__SESSION_BOX_HB__ = now;
-  console.log('[SessionBoxDrawer] Heartbeat set:', now);
+  (self as any).__SESSION_BOX_HB__ = Date.now();
 }
 
 // Session config (UTC hours/minutes)
