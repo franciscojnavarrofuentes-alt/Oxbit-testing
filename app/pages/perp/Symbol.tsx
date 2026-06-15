@@ -8,6 +8,7 @@ import { formatSymbol, generatePageTitle } from "@/utils/utils";
 import { useOrderlyConfig } from "@/utils/config";
 import { getPageMeta } from "@/utils/seo";
 import { renderSEOTags } from "@/utils/seo-tags";
+import { installSessionBoxDrawer } from "@/utils/sessionBoxDrawer";
 
 export default function PerpSymbol() {
   const params = useParams();
@@ -16,6 +17,10 @@ export default function PerpSymbol() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [{ rows }] = usePositionStream(symbol);
+
+  useEffect(() => {
+    installSessionBoxDrawer();
+  }, []);
 
   useEffect(() => {
     updateSymbol(symbol);

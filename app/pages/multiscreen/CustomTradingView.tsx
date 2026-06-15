@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { TradingPage } from "@orderly.network/trading";
 import { useOrderlyConfig } from "@/utils/config";
+import { installSessionBoxDrawer } from "@/utils/sessionBoxDrawer";
 
 interface CustomTradingViewProps {
   symbol: string;
@@ -8,6 +10,10 @@ interface CustomTradingViewProps {
 
 export function CustomTradingView({ symbol, onSymbolChange }: CustomTradingViewProps) {
   const config = useOrderlyConfig();
+
+  useEffect(() => {
+    installSessionBoxDrawer();
+  }, []);
 
   return (
     <div className="custom-trading-view-wrapper">
