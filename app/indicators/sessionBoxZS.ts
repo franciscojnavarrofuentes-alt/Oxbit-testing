@@ -5,7 +5,7 @@
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
   metainfo: {
-    _metainfoVersion: 52,
+    _metainfoVersion: 53,
     id: 'SessionBoxZS@tv-basicstudies-1',
     name: 'ZS Indicador Caja - Aperturas',
     description: 'ZS Indicador Caja - Aperturas',
@@ -13,6 +13,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
     is_price_study: true,
     isCustomIndicator: true,
+    linkedToSeries: true,
 
     format: {
       type: 'price',
@@ -31,9 +32,13 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
         objBId: 'session_low',
         type: 'plot_plot',
         title: 'Session Area',
-        fillgaps: false,
       },
     ],
+
+    styles: {
+      session_high: { title: 'Session High' },
+      session_low: { title: 'Session Low' },
+    },
 
     defaults: {
       styles: {
@@ -41,7 +46,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
           linestyle: 0,
           visible: true,
           linewidth: 1,
-          plottype: 11, // StepLineWithBreaks: flat horizontal + breaks on NaN
+          plottype: 7,
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
@@ -50,7 +55,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
           linestyle: 0,
           visible: true,
           linewidth: 1,
-          plottype: 11, // StepLineWithBreaks
+          plottype: 7,
           trackPrice: false,
           transparency: 0,
           color: '#FFFFFF',
@@ -65,46 +70,48 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       },
       precision: 2,
       inputs: {
-        sessionStart: 13,
-        sessionStartMin: 30,
-        sessionEnd: 15,
-        sessionEndMin: 0,
+        showSessionBox: true,
+        sessionStartHour: 14,
+        sessionStartMinute: 30,
+        sessionEndHour: 16,
+        sessionEndMinute: 0,
       },
-    },
-
-    styles: {
-      session_high: { title: 'Session High', histogramBase: 0 },
-      session_low: { title: 'Session Low', histogramBase: 0 },
     },
 
     inputs: [
       {
-        id: 'sessionStart',
-        name: 'Session Start Hour',
+        id: 'showSessionBox',
+        name: 'Caja apertura',
+        type: 'bool',
+        defval: true,
+      },
+      {
+        id: 'sessionStartHour',
+        name: 'Start Hour',
         type: 'integer',
-        defval: 13,
+        defval: 14,
         min: 0,
         max: 23,
       },
       {
-        id: 'sessionStartMin',
-        name: 'Session Start Minute',
+        id: 'sessionStartMinute',
+        name: 'Start Minute',
         type: 'integer',
         defval: 30,
         min: 0,
         max: 59,
       },
       {
-        id: 'sessionEnd',
-        name: 'Session End Hour',
+        id: 'sessionEndHour',
+        name: 'End Hour',
         type: 'integer',
-        defval: 15,
+        defval: 16,
         min: 0,
         max: 23,
       },
       {
-        id: 'sessionEndMin',
-        name: 'Session End Minute',
+        id: 'sessionEndMinute',
+        name: 'End Minute',
         type: 'integer',
         defval: 0,
         min: 0,
@@ -125,15 +132,18 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
 
       const Std = PineJS.Std;
 
-      const sessionStartH = inputCallback(0);
-      const sessionStartM = inputCallback(1);
-      const sessionEndH = inputCallback(2);
-      const sessionEndM = inputCallback(3);
+      const showSessionBox = inputCallback(0);
+      const startHour = inputCallback(1);
+      const startMinute = inputCallback(2);
+      const endHour = inputCallback(3);
+      const endMinute = inputCallback(4);
 
-      const sessionStartTotalMin = sessionStartH * 60 + sessionStartM;
-      const sessionEndTotalMin = sessionEndH * 60 + sessionEndM;
+      if (!showSessionBox) return [null, null];
 
-      // Use PineJS Std.hour and Std.minute to get the bar's exchange time
+      const sessionStartTotalMin = startHour * 60 + startMinute;
+      const sessionEndTotalMin = endHour * 60 + endMinute;
+
+      // Use PineJS Std.hour/minute — returns exchange timezone, not browser
       const barHour = Std.hour(context);
       const barMinute = Std.minute(context);
       const barTotalMin = barHour * 60 + barMinute;
@@ -141,46 +151,40 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       const curHigh = Std.high(context);
       const curLow = Std.low(context);
 
-      // Check if bar is within session
+      // Handle sessions that cross midnight
       const inSession = sessionEndTotalMin > sessionStartTotalMin
         ? barTotalMin >= sessionStartTotalMin && barTotalMin < sessionEndTotalMin
         : barTotalMin >= sessionStartTotalMin || barTotalMin < sessionEndTotalMin;
 
-      // State variables — use get(1) for previous bar's value
-      // (new_var(init) sets current bar to init, so get(0) returns init,
-      //  but get(1) returns the previous bar's final .set() value)
+      // Persistent state via new_var
       const highVar = context.new_var(NaN);
       const lowVar = context.new_var(NaN);
       const inSessionVar = context.new_var(0);
 
-      // Previous bar's session state
       const wasInSession = inSessionVar.get(1) === 1;
       const sessionJustStarted = inSession && !wasInSession;
 
       if (sessionJustStarted) {
-        // New session: reset to current bar
         highVar.set(curHigh);
         lowVar.set(curLow);
       } else if (inSession) {
-        // During session: expand running high/low
         const prevH = highVar.get(1);
         const prevL = lowVar.get(1);
         highVar.set(isNaN(prevH) ? curHigh : Math.max(prevH, curHigh));
         lowVar.set(isNaN(prevL) ? curLow : Math.min(prevL, curLow));
       } else {
-        // Outside session: carry forward last values
         highVar.set(highVar.get(1));
         lowVar.set(lowVar.get(1));
       }
 
       inSessionVar.set(inSession ? 1 : 0);
 
-      // Show during session (marks the correct session hours on the chart)
+      // Only plot during session — historical boxes remain on chart
       if (inSession) {
         return [highVar.get(0), lowVar.get(0)];
       }
 
-      return [NaN, NaN];
+      return [null, null];
     };
   },
 });
