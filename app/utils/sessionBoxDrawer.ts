@@ -2,9 +2,9 @@
 // Draws perfect rectangles for trading sessions using TradingView's
 // createMultipointShape API instead of PineJS plots (which produce staircases).
 //
-// Two strategies:
-// 1. Proxy: intercept TradingView.widget constructor (if we patch before it's called)
-// 2. Polling: find the widget iframe and access the chart API directly
+// Strategies:
+// 1. Object.defineProperty trap — intercept TradingView.widget at assignment time
+// 2. Polling — find the widget instance via __TV_WIDGET_INSTANCE__ or DOM scanning
 
 interface SessionBox {
   startTime: number; // Unix seconds
@@ -174,11 +174,57 @@ function hookIntoChart(chart: any) {
   } catch (_) {}
 }
 
+function onWidgetCreated(instance: any) {
+  (window as any).__TV_WIDGET_INSTANCE__ = instance;
+  console.log('[SessionBoxDrawer] Widget instance captured, polling for chart...');
+
+  // Poll activeChart() — more reliable than onChartReady
+  const poll = setInterval(() => {
+    if (currentChart) {
+      clearInterval(poll);
+      return;
+    }
+    try {
+      const chart = instance.activeChart();
+      if (chart) {
+        console.log('[SessionBoxDrawer] Chart found via activeChart() poll');
+        clearInterval(poll);
+        hookIntoChart(chart);
+      }
+    } catch (_) {}
+  }, 500);
+
+  // Also try onChartReady as backup
+  try {
+    instance.onChartReady(() => {
+      if (currentChart) return;
+      console.log('[SessionBoxDrawer] Chart ready via onChartReady');
+      hookIntoChart(instance.activeChart());
+    });
+  } catch (_) {}
+
+  setTimeout(() => clearInterval(poll), 60000);
+}
+
+function wrapWidgetConstructor(OrigWidget: any): any {
+  if (OrigWidget.__sessionBoxWrapped__) return OrigWidget;
+
+  const Wrapped = function (this: any, ...args: any[]) {
+    const instance = new OrigWidget(...args);
+    console.log('[SessionBoxDrawer] Widget constructed via wrapper');
+    onWidgetCreated(instance);
+    return instance;
+  } as any;
+
+  Wrapped.prototype = OrigWidget.prototype;
+  Wrapped.__sessionBoxWrapped__ = true;
+  return Wrapped;
+}
+
 /**
  * Install the session box drawer.
- * Uses two strategies:
- * 1. Try to Proxy TradingView.widget before it's constructed
- * 2. Poll for an existing widget instance via the iframe
+ * Uses Object.defineProperty to intercept TradingView.widget at assignment time,
+ * plus polling as fallback to find the widget after creation.
  */
 export function installSessionBoxDrawer() {
   if (typeof window === 'undefined') return;
@@ -187,70 +233,75 @@ export function installSessionBoxDrawer() {
 
   console.log('[SessionBoxDrawer] Installing...');
 
-  // Strategy 1: Wrap the constructor (works if we patch before it's called)
-  const tryWrap = setInterval(() => {
-    const TV = (window as any).TradingView;
-    if (!TV?.widget || (window as any).__TV_WIDGET_WRAPPED__) return;
-    clearInterval(tryWrap);
+  // --- Strategy 1: Object.defineProperty trap ---
+  // Intercept TradingView.widget the moment it's assigned, BEFORE any code
+  // can capture a reference to the original constructor.
 
-    console.log('[SessionBoxDrawer] Wrapping TradingView.widget constructor');
-    const OrigWidget = TV.widget;
-    (window as any).__TV_WIDGET_WRAPPED__ = true;
+  function trapWidgetProperty(tv: any) {
+    if (!tv || tv.__sessionBoxTrapped__) return;
+    tv.__sessionBoxTrapped__ = true;
 
-    // Replace with a wrapper function that calls original via `new`
-    const WrappedWidget = function (this: any, ...args: any[]) {
-      const instance = new OrigWidget(...args);
-      console.log('[SessionBoxDrawer] Widget constructed via wrapper');
+    // If widget already exists, wrap it immediately
+    let _widget = tv.widget;
+    if (_widget) {
+      console.log('[SessionBoxDrawer] TradingView.widget already exists, wrapping immediately');
+      _widget = wrapWidgetConstructor(_widget);
+    }
 
-      // Store instance globally
-      (window as any).__TV_WIDGET_INSTANCE__ = instance;
+    try {
+      Object.defineProperty(tv, 'widget', {
+        get() {
+          return _widget;
+        },
+        set(val: any) {
+          console.log('[SessionBoxDrawer] TradingView.widget assigned, wrapping');
+          _widget = wrapWidgetConstructor(val);
+        },
+        configurable: true,
+        enumerable: true,
+      });
+    } catch (e) {
+      // If defineProperty fails, fall back to direct assignment
+      console.warn('[SessionBoxDrawer] Could not trap widget property:', e);
+      if (_widget) tv.widget = _widget;
+    }
+  }
 
-      // Try onChartReady first
-      try {
-        instance.onChartReady(() => {
-          console.log('[SessionBoxDrawer] Chart ready (via onChartReady)');
-          hookIntoChart(instance.activeChart());
-        });
-      } catch (_) {
-        console.warn('[SessionBoxDrawer] onChartReady threw, will rely on polling');
-      }
+  // Trap window.TradingView itself with getter/setter
+  const existingTV = (window as any).TradingView;
+  let _tv = existingTV;
 
-      // Also poll for activeChart() as fallback — onChartReady is unreliable
-      const pollChart = setInterval(() => {
-        if (currentChart) {
-          clearInterval(pollChart);
-          return;
-        }
-        try {
-          const chart = instance.activeChart();
-          if (chart) {
-            console.log('[SessionBoxDrawer] Chart found via activeChart() poll');
-            clearInterval(pollChart);
-            hookIntoChart(chart);
-          }
-        } catch (_) {}
-      }, 1000);
+  if (existingTV) {
+    trapWidgetProperty(existingTV);
+  }
 
-      // Stop polling after 60s
-      setTimeout(() => clearInterval(pollChart), 60000);
+  try {
+    Object.defineProperty(window, 'TradingView', {
+      get() {
+        return _tv;
+      },
+      set(val: any) {
+        console.log('[SessionBoxDrawer] window.TradingView assigned');
+        _tv = val;
+        if (val) trapWidgetProperty(val);
+      },
+      configurable: true,
+      enumerable: true,
+    });
+  } catch (e) {
+    console.warn('[SessionBoxDrawer] Could not trap window.TradingView:', e);
+  }
 
-      return instance;
-    } as any;
-
-    // Preserve prototype so instanceof checks work
-    WrappedWidget.prototype = OrigWidget.prototype;
-
-    TV.widget = WrappedWidget;
-  }, 50);
-
-  // Strategy 2: Poll for widget instance (fallback if wrapper was too late)
+  // --- Strategy 2: Poll for widget instance ---
+  // Fallback if the defineProperty trap didn't catch the constructor
+  // (e.g. widget was already created before install was called).
   const pollForWidget = setInterval(() => {
     if (currentChart) {
       clearInterval(pollForWidget);
       return;
     }
 
-    // Try stored instance first — poll activeChart() directly
+    // Check for stored widget instance
     const instance = (window as any).__TV_WIDGET_INSTANCE__;
     if (instance) {
       try {
@@ -263,11 +314,31 @@ export function installSessionBoxDrawer() {
         }
       } catch (_) {}
     }
-  }, 1000);
 
-  // Stop polling after 120s (widget can take 30+ seconds to construct)
+    // Scan window properties for any object with activeChart method
+    try {
+      for (const key of Object.getOwnPropertyNames(window)) {
+        if (key.startsWith('__') || key === 'self' || key === 'window' || key === 'globalThis') continue;
+        try {
+          const val = (window as any)[key];
+          if (
+            val &&
+            typeof val === 'object' &&
+            typeof val.activeChart === 'function' &&
+            typeof val.onChartReady === 'function'
+          ) {
+            console.log(`[SessionBoxDrawer] Found widget on window.${key}`);
+            onWidgetCreated(val);
+            clearInterval(pollForWidget);
+            return;
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }, 2000);
+
+  // Stop polling after 120s
   setTimeout(() => {
-    clearInterval(tryWrap);
     clearInterval(pollForWidget);
     if (!currentChart) {
       console.warn('[SessionBoxDrawer] Could not find TradingView widget after 120s');

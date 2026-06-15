@@ -10,6 +10,10 @@ import { getPageMeta } from "@/utils/seo";
 import { renderSEOTags } from "@/utils/seo-tags";
 import { installSessionBoxDrawer } from "@/utils/sessionBoxDrawer";
 
+// Install BEFORE any component renders — must run before TradingPage
+// captures the TradingView.widget constructor reference
+installSessionBoxDrawer();
+
 export default function PerpSymbol() {
   const params = useParams();
   const [symbol, setSymbol] = useState(params.symbol!);
@@ -17,10 +21,6 @@ export default function PerpSymbol() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [{ rows }] = usePositionStream(symbol);
-
-  useEffect(() => {
-    installSessionBoxDrawer();
-  }, []);
 
   useEffect(() => {
     updateSymbol(symbol);
