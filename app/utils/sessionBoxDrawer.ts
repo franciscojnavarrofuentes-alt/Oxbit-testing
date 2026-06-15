@@ -18,10 +18,12 @@ let drawnShapes: any[] = [];
 let currentChart: any = null;
 let boxesDrawn = false;
 
-// Heartbeat — shared via module scope (avoids cross-iframe window issues)
-let _heartbeat = 0;
+// Heartbeat — use self (globalThis) to guarantee cross-module sharing.
+// Module-level variables can be duplicated if the bundler creates separate chunks.
 export function sessionBoxHeartbeat() {
-  _heartbeat = Date.now();
+  const now = Date.now();
+  (self as any).__SESSION_BOX_HB__ = now;
+  console.log('[SessionBoxDrawer] Heartbeat set:', now);
 }
 
 // Session config (UTC hours/minutes)
@@ -154,9 +156,8 @@ async function redraw(chart: any) {
 }
 
 function isHeartbeatActive(): boolean {
-  // PineJS main() runs synchronously across all bars, then periodically
-  // on new ticks. Use a generous 30s window to avoid false negatives.
-  return _heartbeat > 0 && Date.now() - _heartbeat < 30000;
+  const hb = (self as any).__SESSION_BOX_HB__;
+  return typeof hb === 'number' && hb > 0 && Date.now() - hb < 30000;
 }
 
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
