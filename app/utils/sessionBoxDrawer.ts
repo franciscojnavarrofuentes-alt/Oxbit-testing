@@ -149,7 +149,9 @@ async function redraw(chart: any) {
 
 function isHeartbeatActive(): boolean {
   const hb = (window as any).__SESSION_BOX_HEARTBEAT__;
-  return typeof hb === 'number' && Date.now() - hb < 5000;
+  // PineJS main() runs synchronously across all bars, then periodically
+  // on new ticks. Use a generous 30s window to avoid false negatives.
+  return typeof hb === 'number' && Date.now() - hb < 30000;
 }
 
 function hookIntoChart(chart: any) {
