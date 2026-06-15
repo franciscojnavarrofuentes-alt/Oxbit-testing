@@ -1,8 +1,8 @@
 // ZS Indicador Caja - Aperturas
 // This indicator acts as a toggle for the session box drawer.
-// It renders no plots itself — it only sends a heartbeat signal via
-// sessionBoxHeartbeat() so the drawer knows to draw rectangles
-// using createMultipointShape (which produces perfect boxes, not staircases).
+// It needs at least one plot so TradingView keeps calling main().
+// The plot is invisible (transparency 100) — the actual rectangles
+// are drawn by sessionBoxDrawer via createMultipointShape.
 
 import { sessionBoxHeartbeat } from '@/utils/sessionBoxDrawer';
 
@@ -24,9 +24,26 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       precision: 2,
     },
 
-    plots: [],
-    styles: {},
+    plots: [
+      { id: 'dummy', type: 'line' },
+    ],
+
+    styles: {
+      dummy: { title: 'Session Box' },
+    },
+
     defaults: {
+      styles: {
+        dummy: {
+          linestyle: 0,
+          visible: false,
+          linewidth: 0,
+          plottype: 0,
+          trackPrice: false,
+          transparency: 100,
+          color: '#000000',
+        },
+      },
       precision: 2,
       inputs: {},
     },
@@ -46,7 +63,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       // Signal to sessionBoxDrawer that this indicator is active
       sessionBoxHeartbeat();
 
-      return [];
+      return [null];
     };
   },
 });
