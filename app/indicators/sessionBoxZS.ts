@@ -130,6 +130,11 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       (this as any)._context = context;
       (this as any)._input = inputCallback;
 
+      // Signal to sessionBoxDrawer that this indicator is active
+      if (typeof window !== 'undefined') {
+        (window as any).__SESSION_BOX_HEARTBEAT__ = Date.now();
+      }
+
       const Std = PineJS.Std;
 
       const showSessionBox = inputCallback(0);

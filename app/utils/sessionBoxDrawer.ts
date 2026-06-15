@@ -16,6 +16,7 @@ interface SessionBox {
 // Track drawn shape IDs for cleanup
 let drawnShapes: any[] = [];
 let currentChart: any = null;
+let boxesDrawn = false;
 
 // Session config (UTC hours/minutes)
 // 14:30–16:00 Spanish time (CEST/UTC+2) = 12:30–14:00 UTC
@@ -143,33 +144,51 @@ async function drawSessionBoxes(chart: any) {
 async function redraw(chart: any) {
   clearShapes(chart);
   await drawSessionBoxes(chart);
+  boxesDrawn = drawnShapes.length > 0;
+}
+
+function isHeartbeatActive(): boolean {
+  const hb = (window as any).__SESSION_BOX_HEARTBEAT__;
+  return typeof hb === 'number' && Date.now() - hb < 5000;
 }
 
 function hookIntoChart(chart: any) {
   if (currentChart === chart) return; // Already hooked
   currentChart = chart;
 
-  console.log('[SessionBoxDrawer] Hooked into chart, drawing initial boxes...');
+  console.log('[SessionBoxDrawer] Hooked into chart, waiting for indicator heartbeat...');
 
-  // Initial draw — wait a bit for data to be ready
-  setTimeout(() => redraw(chart), 1000);
+  // Heartbeat toggle: check every 2s if the indicator is active
+  setInterval(() => {
+    const active = isHeartbeatActive();
+    if (active && !boxesDrawn) {
+      console.log('[SessionBoxDrawer] Indicator active, drawing boxes...');
+      redraw(chart);
+    } else if (!active && boxesDrawn) {
+      console.log('[SessionBoxDrawer] Indicator removed, clearing boxes...');
+      clearShapes(chart);
+      boxesDrawn = false;
+    }
+  }, 2000);
 
   // Redraw on data loaded (scroll/zoom loads more bars)
   try {
-    chart.onDataLoaded().subscribe(null, () => redraw(chart));
+    chart.onDataLoaded().subscribe(null, () => {
+      if (isHeartbeatActive()) redraw(chart);
+    });
   } catch (_) {}
 
   // Redraw on symbol change
   try {
     chart.onSymbolChanged().subscribe(null, () => {
-      setTimeout(() => redraw(chart), 1000);
+      if (isHeartbeatActive()) setTimeout(() => redraw(chart), 1000);
     });
   } catch (_) {}
 
   // Redraw on interval change
   try {
     chart.onIntervalChanged().subscribe(null, () => {
-      setTimeout(() => redraw(chart), 1000);
+      if (isHeartbeatActive()) setTimeout(() => redraw(chart), 1000);
     });
   } catch (_) {}
 }
