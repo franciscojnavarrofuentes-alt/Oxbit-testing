@@ -205,10 +205,34 @@ export function installSessionBoxDrawer() {
       // Store instance globally
       (window as any).__TV_WIDGET_INSTANCE__ = instance;
 
-      instance.onChartReady(() => {
-        console.log('[SessionBoxDrawer] Chart ready (via wrapper)');
-        hookIntoChart(instance.activeChart());
-      });
+      // Try onChartReady first
+      try {
+        instance.onChartReady(() => {
+          console.log('[SessionBoxDrawer] Chart ready (via onChartReady)');
+          hookIntoChart(instance.activeChart());
+        });
+      } catch (_) {
+        console.warn('[SessionBoxDrawer] onChartReady threw, will rely on polling');
+      }
+
+      // Also poll for activeChart() as fallback — onChartReady is unreliable
+      const pollChart = setInterval(() => {
+        if (currentChart) {
+          clearInterval(pollChart);
+          return;
+        }
+        try {
+          const chart = instance.activeChart();
+          if (chart) {
+            console.log('[SessionBoxDrawer] Chart found via activeChart() poll');
+            clearInterval(pollChart);
+            hookIntoChart(chart);
+          }
+        } catch (_) {}
+      }, 1000);
+
+      // Stop polling after 60s
+      setTimeout(() => clearInterval(pollChart), 60000);
 
       return instance;
     } as any;
@@ -219,51 +243,34 @@ export function installSessionBoxDrawer() {
     TV.widget = WrappedWidget;
   }, 50);
 
-  // Strategy 2: Poll for widget instance (fallback if Proxy was too late)
+  // Strategy 2: Poll for widget instance (fallback if wrapper was too late)
   const pollForWidget = setInterval(() => {
-    // Check if we already have a chart hooked
     if (currentChart) {
       clearInterval(pollForWidget);
       return;
     }
 
-    // Check for widget instance stored by Proxy
+    // Try stored instance first — poll activeChart() directly
     const instance = (window as any).__TV_WIDGET_INSTANCE__;
     if (instance) {
       try {
-        instance.onChartReady(() => {
-          console.log('[SessionBoxDrawer] Chart ready (via poll, stored instance)');
-          hookIntoChart(instance.activeChart());
-        });
-        clearInterval(pollForWidget);
-        return;
+        const chart = instance.activeChart();
+        if (chart) {
+          console.log('[SessionBoxDrawer] Chart found via poll (stored instance)');
+          clearInterval(pollForWidget);
+          hookIntoChart(chart);
+          return;
+        }
       } catch (_) {}
     }
+  }, 1000);
 
-    // Check for widget via iframe - TradingView creates iframes with specific IDs
-    const iframes = document.querySelectorAll('iframe[id^="tradingview"]');
-    if (iframes.length > 0) {
-      // The widget might be accessible through the iframe's parent element
-      const container = iframes[0]?.parentElement;
-      if (container && (container as any).__widget) {
-        const widget = (container as any).__widget;
-        try {
-          widget.onChartReady(() => {
-            console.log('[SessionBoxDrawer] Chart ready (via iframe)');
-            hookIntoChart(widget.activeChart());
-          });
-          clearInterval(pollForWidget);
-        } catch (_) {}
-      }
-    }
-  }, 500);
-
-  // Stop polling after 30s
+  // Stop polling after 120s (widget can take 30+ seconds to construct)
   setTimeout(() => {
     clearInterval(tryWrap);
     clearInterval(pollForWidget);
     if (!currentChart) {
-      console.warn('[SessionBoxDrawer] Could not find TradingView widget after 30s');
+      console.warn('[SessionBoxDrawer] Could not find TradingView widget after 120s');
     }
-  }, 30000);
+  }, 120000);
 }
