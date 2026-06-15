@@ -155,7 +155,7 @@ async function redraw(chart: any) {
 
 function isHeartbeatActive(): boolean {
   const hb = (self as any).__SESSION_BOX_HB__;
-  return typeof hb === 'number' && hb > 0 && Date.now() - hb < 30000;
+  return typeof hb === 'number' && hb > 0 && Date.now() - hb < 5000;
 }
 
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
