@@ -1,8 +1,10 @@
 // ZS Indicador Caja - Aperturas
 // This indicator acts as a toggle for the session box drawer.
 // It renders no plots itself — it only sends a heartbeat signal via
-// window.__SESSION_BOX_HEARTBEAT__ so the drawer knows to draw rectangles
+// sessionBoxHeartbeat() so the drawer knows to draw rectangles
 // using createMultipointShape (which produces perfect boxes, not staircases).
+
+import { sessionBoxHeartbeat } from '@/utils/sessionBoxDrawer';
 
 export const createSessionBoxIndicator = (PineJS: any): any => ({
   name: 'ZS Indicador Caja - Aperturas',
@@ -42,9 +44,7 @@ export const createSessionBoxIndicator = (PineJS: any): any => ({
       (this as any)._input = inputCallback;
 
       // Signal to sessionBoxDrawer that this indicator is active
-      if (typeof window !== 'undefined') {
-        (window as any).__SESSION_BOX_HEARTBEAT__ = Date.now();
-      }
+      sessionBoxHeartbeat();
 
       return [];
     };

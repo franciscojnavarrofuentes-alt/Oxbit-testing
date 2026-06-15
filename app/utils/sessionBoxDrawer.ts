@@ -18,6 +18,12 @@ let drawnShapes: any[] = [];
 let currentChart: any = null;
 let boxesDrawn = false;
 
+// Heartbeat — shared via module scope (avoids cross-iframe window issues)
+let _heartbeat = 0;
+export function sessionBoxHeartbeat() {
+  _heartbeat = Date.now();
+}
+
 // Session config (UTC hours/minutes)
 // 14:30–16:00 Spanish time (CEST/UTC+2) = 12:30–14:00 UTC
 const SESSION_START_HOUR = 12;
@@ -148,10 +154,9 @@ async function redraw(chart: any) {
 }
 
 function isHeartbeatActive(): boolean {
-  const hb = (window as any).__SESSION_BOX_HEARTBEAT__;
   // PineJS main() runs synchronously across all bars, then periodically
   // on new ticks. Use a generous 30s window to avoid false negatives.
-  return typeof hb === 'number' && Date.now() - hb < 30000;
+  return _heartbeat > 0 && Date.now() - _heartbeat < 30000;
 }
 
 function hookIntoChart(chart: any) {
