@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { WalletConnectorPrivyProvider, Network } from '@orderly.network/wallet-connector-privy';
 import type { NetworkId } from "@orderly.network/types";
 import { QueryClient } from "@tanstack/query-core";
+import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { getEvmConnectors, getSolanaConfig } from '../../utils/walletConfig';
 import { getRuntimeConfig, getRuntimeConfigBoolean } from '@/utils/runtime-config';
 
@@ -57,6 +58,11 @@ const PrivyConnector = ({ children, networkId }: {
           fundingMethodConfig: {
             moonpay: {
               useSandbox: false,
+            },
+          },
+          externalWallets: {
+            solana: {
+              connectors: toSolanaWalletConnectors(),
             },
           },
         },
