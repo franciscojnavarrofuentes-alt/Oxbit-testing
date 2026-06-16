@@ -50,15 +50,6 @@ const PrivyConnector = ({ children, networkId }: {
             showWalletLoginFirst: false,
           },
           loginMethods: loginMethods,
-          embeddedWallets: {
-            createOnLogin: 'users-without-wallets',
-            showWalletUIs: true,
-          },
-          fundingMethodConfig: {
-            moonpay: {
-              useSandbox: false,
-            },
-          },
         },
         appid: appId,
       }}
