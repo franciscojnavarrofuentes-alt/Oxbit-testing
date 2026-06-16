@@ -2,9 +2,8 @@ import { ReactNode } from 'react';
 import { WalletConnectorPrivyProvider, Network } from '@orderly.network/wallet-connector-privy';
 import type { NetworkId } from "@orderly.network/types";
 import { QueryClient } from "@tanstack/query-core";
-import { getEvmConnectors, getSolanaConfig, getSolanaWallets } from '../../utils/walletConfig';
+import { getEvmConnectors, getSolanaConfig } from '../../utils/walletConfig';
 import { getRuntimeConfig, getRuntimeConfigBoolean } from '@/utils/runtime-config';
-import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 
 type LoginMethod = "email" | "passkey" | "twitter" | "google";
 
@@ -13,12 +12,12 @@ const getLoginMethods = (): LoginMethod[] => {
   if (!loginMethodsEnv) {
     return ['email'];
   }
-  
+
   const validMethods: LoginMethod[] = ["email", "passkey", "twitter", "google"];
-  
+
   return loginMethodsEnv.split(',')
     .map((method: string) => method.trim())
-    .filter((method: string): method is LoginMethod => 
+    .filter((method: string): method is LoginMethod =>
       validMethods.includes(method as LoginMethod)
     );
 };
@@ -51,13 +50,6 @@ const PrivyConnector = ({ children, networkId }: {
             showWalletLoginFirst: false,
           },
           loginMethods: loginMethods,
-          externalWallets: disableSolanaWallets ? undefined : {
-            solana: {
-              connectors: toSolanaWalletConnectors({
-                shouldAutoConnect: true,
-              }),
-            },
-          },
         },
         appid: appId,
       }}
@@ -70,4 +62,4 @@ const PrivyConnector = ({ children, networkId }: {
   );
 };
 
-export default PrivyConnector; 
+export default PrivyConnector;
