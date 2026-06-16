@@ -35,7 +35,7 @@
     "@solana-mobile/wallet-adapter-mobile": "^2.2.0",
     "@solana/wallet-adapter-base": "^0.9.24",
     "@solana/wallet-adapter-wallets": "^0.19.36",
-    "@stakekit/widget": "^0.0.278",
+    "@stakekit/widget": "^0.0.212",
     "@tanstack/query-core": "^5.79.0",
     "@web3-onboard/walletconnect": "^2.6.2",
     "ip-range-check": "^0.2.0",

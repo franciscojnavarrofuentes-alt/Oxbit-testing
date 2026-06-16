@@ -3,7 +3,7 @@ import { useWalletConnector } from "@orderly.network/hooks";
 import { SKApp, darkTheme } from "@stakekit/widget";
 import { getRuntimeConfig } from "../utils/runtime-config";
 
-import "@stakekit/widget/package/css";
+import "@stakekit/widget/style.css";
 
 export default function StakeKitWidget() {
   const { wallet, setChain, connectedChain } = useWalletConnector();
@@ -25,8 +25,8 @@ export default function StakeKitWidget() {
   );
 
   const handleSwitchChain = useCallback(
-    async (chainId: number): Promise<void> => {
-      await setChain({ chainId });
+    async (chainId: string): Promise<void> => {
+      await setChain({ chainId: Number(chainId) });
     },
     [setChain]
   );
@@ -35,30 +35,25 @@ export default function StakeKitWidget() {
     async (tx: any): Promise<string> => {
       if (!provider) throw new Error("Wallet not connected");
 
-      if (tx.type === "evm") {
-        const evmTx = tx.tx;
-        const txHash = await provider.request({
-          method: "eth_sendTransaction",
-          params: [
-            {
-              to: evmTx.to,
-              from: evmTx.from,
-              data: evmTx.data,
-              value: evmTx.value,
-              gas: evmTx.gas,
-              ...(evmTx.maxFeePerGas
-                ? {
-                    maxFeePerGas: evmTx.maxFeePerGas,
-                    maxPriorityFeePerGas: evmTx.maxPriorityFeePerGas,
-                  }
-                : { gasPrice: evmTx.gasPrice }),
-            },
-          ],
-        });
-        return txHash as string;
-      }
-
-      throw new Error(`Unsupported transaction type: ${tx.type}`);
+      const txHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            to: tx.to,
+            from: tx.from,
+            data: tx.data,
+            value: tx.value,
+            gas: tx.gas,
+            ...(tx.maxFeePerGas
+              ? {
+                  maxFeePerGas: tx.maxFeePerGas,
+                  maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
+                }
+              : {}),
+          },
+        ],
+      });
+      return txHash as string;
     },
     [provider]
   );

@@ -66,6 +66,7 @@ jobs:
         if: steps.check-custom-domain.outputs.has_custom_domain == 'false'
         run: yarn build:spa
         env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
           PUBLIC_PATH: /${{ env.REPO_NAME }}/
           VITE_PUBLIC_PATH: /${{ env.REPO_NAME }}/
           VITE_BASE_URL: /${{ env.REPO_NAME }}
@@ -74,6 +75,7 @@ jobs:
         if: steps.check-custom-domain.outputs.has_custom_domain == 'true'
         run: yarn build:spa
         env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
           PUBLIC_PATH: /
           VITE_PUBLIC_PATH: /
           VITE_BASE_URL: ""
