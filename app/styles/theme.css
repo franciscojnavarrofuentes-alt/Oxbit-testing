@@ -1,46 +1,15 @@
 :root {
-  --oui-font-family: 'Manrope', sans-serif;
-
-  /* global font sizes */
-  --oui-font-size-xs: 12px;   /* small labels, table footers */
-  --oui-font-size-sm: 12px;   /* default small text */
-  --oui-font-size-md: 14px;   /* default body, chart labels */
-  --oui-font-size-lg: 16px;   /* nav items, headings */
-  --oui-font-size-xl: 20px;   /* section titles, key values */
-  --oui-font-size-2xl: 24px;  /* page titles */
-
-  /* specific semantic font sizes */
-  --oui-font-size-nav: var(--oui-font-size-lg);              /* 16px */
-  --oui-font-size-stats-label: 12px;                         /* stats labels */
-  --oui-font-size-stats-value: 15px;                         /* stats values (was 14px) */
-  --oui-font-size-chart-axis: var(--oui-font-size-sm);       /* 12px */
-  --oui-font-size-chart-lastprice: var(--oui-font-size-md);  /* 14px */
-  --oui-font-size-button: var(--oui-font-size-md);           /* 14px */
-  --oui-font-size-pair-name: var(--oui-font-size-xl);        /* 20px */
-
-  /*  order book specific sizes */
-  --oui-font-size-ob-header: 13px;   /* was 12px */
-  --oui-font-size-ob-row:    14px;   /* was 13px */
-  --oui-font-size-ob-mid:    19px;   /* was 20px */
-
-  /* font weights + line-heights */
-  --oui-font-weight-regular: 400;
-  --oui-font-weight-medium: 500;
-  --oui-font-weight-semibold: 600;
-  --oui-font-weight-bold: 700;
-
-  --oui-line-height-tight: 1.15;
-  --oui-line-height-normal: 1.35;
-  --oui-line-height-loose: 1.5;
+  --oui-font-family: 'Satoshi', sans-serif;
+  --oui-font-size-base: 16px;
 
   /* colors */
-  --oui-color-primary: 56 210 199;
-  --oui-color-primary-light: 56 210 199;
-  --oui-color-primary-darken: 56 210 199;
+  --oui-color-primary: 170 138 248;
+  --oui-color-primary-light: 223 217 252;
+  --oui-color-primary-darken: 111 83 239;
   --oui-color-primary-contrast: 255 255 255;
 
-  --oui-color-link: 56 210 199;
-  --oui-color-link-light: 56 210 199;
+  --oui-color-link: 149 110 247;
+  --oui-color-link-light: 220 207 252;
 
   --oui-color-secondary: 255 255 255;
   --oui-color-tertiary: 218 218 218;
@@ -61,74 +30,86 @@
   --oui-color-warning-darken: 255 152 0;
   --oui-color-warning-contrast: 255 255 255;
 
-  --oui-color-fill: 36 32 47;
-  --oui-color-fill-active: 40 46 58;
+  --oui-color-fill: 13 12 15;
+  --oui-color-fill-active: 25 23 28;
 
-  --oui-color-base-1: 93 83 123;
-  --oui-color-base-2: 81 72 107;
-  --oui-color-base-3: 68 61 69;
-  --oui-color-base-4: 57 52 74;
-  --oui-color-base-5: 51 46 66;
-  --oui-color-base-6: 43 38 56;
-  --oui-color-base-7: 64 59 88;
-  --oui-color-base-8: 29 26 38;
-  --oui-color-base-9: 15 26 31;
-  --oui-color-base-10: 30 38 43;
+  --oui-color-base-1: 98 91 113;
+  --oui-color-base-2: 98 91 113;
+  --oui-color-base-3: 49 45 57;
+  --oui-color-base-4: 49 45 57;
+  --oui-color-base-5: 25 23 28;
+  --oui-color-base-6: 25 23 28;
+  --oui-color-base-7: 25 23 28;
+  --oui-color-base-8: 13 12 15;
+  --oui-color-base-9: 13 12 15;
+  --oui-color-base-10: 13 12 15;
 
   --oui-color-base-foreground: 255 255 255;
   --oui-color-line: 255 255 255;
 
-  --oui-color-trading-loss: 217 139 139;        /* red sell text */
+  --oui-color-trading-loss: 245 97 139;
   --oui-color-trading-loss-contrast: 255 255 255;
-  --oui-color-trading-profit: 71 199 176;        /* green buy text */
+  --oui-color-trading-profit: 41 233 169;
   --oui-color-trading-profit-contrast: 255 255 255;
 
   /* gradients */
-  --oui-gradient-primary-start: 56 210 199;
-  --oui-gradient-primary-end: 101 240 194;
+  --oui-gradient-primary-start: 170 138 248;
+  --oui-gradient-primary-end: 170 138 248;
 
-  --oui-gradient-secondary-start: 81 42 121;
-  --oui-gradient-secondary-end: 56 210 199;
+  --oui-gradient-secondary-start: 170 138 248;
+  --oui-gradient-secondary-end: 170 138 248;
 
-  --oui-gradient-success-start: 1 83 68;
-  --oui-gradient-success-end: 41 223 169;
+  --oui-gradient-success-start: 41 233 169;
+  --oui-gradient-success-end: 41 233 169;
 
-  --oui-gradient-danger-start: 153 24 76;
+  --oui-gradient-danger-start: 245 97 139;
   --oui-gradient-danger-end: 245 97 139;
 
-  --oui-gradient-brand-start: 56 210 199;
-  --oui-gradient-brand-end: 56 210 199;
+  --oui-gradient-brand-start: 170 138 248;
+  --oui-gradient-brand-end: 170 138 248;
   --oui-gradient-brand-stop-start: 6.62%;
   --oui-gradient-brand-stop-end: 86.5%;
   --oui-gradient-brand-angle: 17.44deg;
 
-  --oui-gradient-warning-start: 152 58 8;
+  --oui-gradient-warning-start: 255 209 70;
   --oui-gradient-warning-end: 255 209 70;
 
-  --oui-gradient-neutral-start: 27 29 24;
-  --oui-gradient-neutral-end: 38 41 46;
+  --oui-gradient-neutral-start: 25 23 28;
+  --oui-gradient-neutral-end: 25 23 28;
 
   /* rounded */
-  --oui-rounded-sm: 0px;
-  --oui-rounded: 0px;
-  --oui-rounded-md: 6px;
-  --oui-rounded-lg: 0px;
-  --oui-rounded-xl: 0px;
-  --oui-rounded-2xl: 0px;
+  --oui-rounded-sm: 6px;
+  --oui-rounded: 16px;
+  --oui-rounded-md: 34px;
+  --oui-rounded-lg: 12px;
+  --oui-rounded-xl: 16px;
+  --oui-rounded-2xl: 20px;
   --oui-rounded-full: 9999px;
 
-
+  /* spacing */
+  --oui-spacing-xs: 25rem;
+  --oui-spacing-sm: 27.5rem;
+  --oui-spacing-md: 31.25rem;
+  --oui-spacing-lg: 35rem;
+  --oui-spacing-xl: 38.75rem;
 }
 
-/* try hide the whole block */
-[data-name="legend-source-exchange"],
-[data-name="legend-source-exchange"] * {
-  display: none !important;
+html, body {
+  font-family: 'Satoshi', sans-serif !important;
+  font-size: 16px !important;
 }
 
-/* sometimes it is nested inside the legend container */
-.tv-chart [data-name="legend-source-exchange"],
-.chart-container [data-name="legend-source-exchange"],
-#tv_chart_container [data-name="legend-source-exchange"] {
+.orderly-app-container,
+.orderly-app-container *,
+.orderly-app-container *::before,
+.orderly-app-container *::after {
+  font-family: 'Satoshi', sans-serif !important;
+}
+/* Colapsar panel de markets por defecto */
+[class*="market-sidebar"],
+[class*="markets-panel"],
+[class*="SideBar"],
+[class*="left-panel"] {
   display: none !important;
+  width: 0 !important;
 }
