@@ -55,11 +55,6 @@ export default defineConfig(() => {
         include: ["buffer", "crypto", "stream"],
       }),
     ],
-    resolve: {
-      alias: {
-        "@noble/hashes": path.resolve(__dirname, "node_modules/@noble/hashes"),
-      },
-    },
     build: {
       outDir: "build/client",
     },
