@@ -2,8 +2,9 @@ import { ReactNode } from 'react';
 import { WalletConnectorPrivyProvider, Network } from '@orderly.network/wallet-connector-privy';
 import type { NetworkId } from "@orderly.network/types";
 import { QueryClient } from "@tanstack/query-core";
-import { getEvmConnectors, getSolanaConfig } from '../../utils/walletConfig';
+import { getEvmConnectors, getSolanaConfig, getSolanaWallets } from '../../utils/walletConfig';
 import { getRuntimeConfig, getRuntimeConfigBoolean } from '@/utils/runtime-config';
+import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 
 type LoginMethod = "email" | "passkey" | "twitter" | "google";
 
@@ -50,6 +51,13 @@ const PrivyConnector = ({ children, networkId }: {
             showWalletLoginFirst: false,
           },
           loginMethods: loginMethods,
+          externalWallets: disableSolanaWallets ? undefined : {
+            solana: {
+              connectors: toSolanaWalletConnectors({
+                shouldAutoConnect: true,
+              }),
+            },
+          },
         },
         appid: appId,
       }}
