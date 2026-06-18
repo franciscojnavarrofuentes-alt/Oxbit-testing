@@ -27,7 +27,7 @@ window.__RUNTIME_CONFIG__ = {
   "VITE_TWITTER_URL": "",
   "VITE_SEO_SITE_NAME": "OxBit",
   "VITE_SEO_SITE_DESCRIPTION": "OxBit",
-  "VITE_SEO_SITE_URL": "https://app.oxbit.exchange",
+  "VITE_SEO_SITE_URL": "https://test.oxbit.exchange",
   "VITE_SEO_SITE_LANGUAGE": "en",
   "VITE_SEO_SITE_LOCALE": "en_US",
   "VITE_SEO_TWITTER_HANDLE": "",
