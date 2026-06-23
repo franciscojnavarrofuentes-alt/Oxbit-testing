@@ -1,6 +1,7 @@
 import { useFundWallet, useWallets } from '@privy-io/react-auth';
 import { useCallback, useState, useRef, useEffect } from 'react';
 import { ConvertUsdcToEth } from './ConvertUsdcToEth';
+import { SendFunds } from './SendFunds';
 
 export const FundWalletButton = () => {
   const { wallets } = useWallets();
@@ -8,6 +9,7 @@ export const FundWalletButton = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showConvert, setShowConvert] = useState(false);
+  const [showSend, setShowSend] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const embeddedWallet = wallets.find(
@@ -32,6 +34,7 @@ export const FundWalletButton = () => {
       setShowMenu(false);
       await fundWallet(embeddedWallet.address, {
         asset: 'USDC',
+        amount: '10',
       });
     } catch (error) {
       console.error('Error funding wallet:', error);
@@ -120,12 +123,37 @@ export const FundWalletButton = () => {
             >
               USDC → ETH (Gas)
             </button>
+            <button
+              onClick={() => {
+                setShowMenu(false);
+                setShowSend(true);
+              }}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '10px 16px',
+                background: 'transparent',
+                color: 'white',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '14px',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              Send
+            </button>
           </div>
         )}
       </div>
       <ConvertUsdcToEth
         isOpen={showConvert}
         onClose={() => setShowConvert(false)}
+      />
+      <SendFunds
+        isOpen={showSend}
+        onClose={() => setShowSend(false)}
       />
     </>
   );
