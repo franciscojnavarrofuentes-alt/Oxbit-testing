@@ -186,8 +186,11 @@ function hookIntoChart(chart: any) {
       console.log('[SessionBoxDrawer] Indicator active, drawing boxes...');
       redraw(chart);
     } else if (!active && boxesDrawn) {
-      console.log('[SessionBoxDrawer] Indicator removed, clearing boxes...');
-      clearShapes(chart);
+      // Don't clear shapes immediately — just mark as not drawn.
+      // If the indicator comes back, redraw() will draw new boxes
+      // before clearing old ones (no flash).
+      // If truly removed, shapes stay until chart is destroyed.
+      console.log('[SessionBoxDrawer] Indicator heartbeat lost, marking for redraw...');
       boxesDrawn = false;
     }
   }, 2000);
