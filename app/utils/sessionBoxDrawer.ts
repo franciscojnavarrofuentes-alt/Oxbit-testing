@@ -148,8 +148,13 @@ async function drawSessionBoxes(chart: any) {
 }
 
 async function redraw(chart: any) {
-  clearShapes(chart);
+  const oldShapes = [...drawnShapes];
+  drawnShapes = [];
   await drawSessionBoxes(chart);
+  // Clear old shapes AFTER new ones are drawn to avoid flash
+  for (const id of oldShapes) {
+    try { chart.removeEntity(id); } catch (_) {}
+  }
   boxesDrawn = drawnShapes.length > 0;
 }
 
