@@ -84,7 +84,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
       inputs: {
         emaPeriods: 12,
         showPivots: true,
-        pivotResolution: '480',
+        pivotResolution: '400',
       },
     },
 
@@ -107,7 +107,7 @@ export const createEmaPivotesIndicator = (PineJS: any): any => ({
         id: 'pivotResolution',
         name: 'Periodos',
         type: 'text',
-        defval: '480',
+        defval: '400',
       },
     ],
   },
