@@ -164,6 +164,8 @@ function isHeartbeatActive(): boolean {
 }
 
 let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+let heartbeatMissCount = 0;
+const MISS_THRESHOLD = 3; // Clear after 3 consecutive misses (6s)
 
 function hookIntoChart(chart: any) {
   if (currentChart === chart) return; // Already hooked to this exact chart
@@ -176,6 +178,7 @@ function hookIntoChart(chart: any) {
   if (heartbeatInterval) clearInterval(heartbeatInterval);
 
   currentChart = chart;
+  heartbeatMissCount = 0;
 
   console.log('[SessionBoxDrawer] Hooked into chart, waiting for indicator heartbeat...');
 
@@ -183,15 +186,22 @@ function hookIntoChart(chart: any) {
   heartbeatInterval = setInterval(() => {
     const active = isHeartbeatActive();
     if (active && !boxesDrawn) {
+      heartbeatMissCount = 0;
       console.log('[SessionBoxDrawer] Indicator active, drawing boxes...');
       redraw(chart);
-    } else if (!active && boxesDrawn) {
-      // Don't clear shapes immediately — just mark as not drawn.
-      // If the indicator comes back, redraw() will draw new boxes
-      // before clearing old ones (no flash).
-      // If truly removed, shapes stay until chart is destroyed.
-      console.log('[SessionBoxDrawer] Indicator heartbeat lost, marking for redraw...');
-      boxesDrawn = false;
+    } else if (active && boxesDrawn) {
+      heartbeatMissCount = 0;
+    } else if (!active && (boxesDrawn || drawnShapes.length > 0)) {
+      heartbeatMissCount++;
+      if (heartbeatMissCount >= MISS_THRESHOLD) {
+        console.log('[SessionBoxDrawer] Indicator removed, clearing boxes...');
+        clearShapes(chart);
+        boxesDrawn = false;
+        heartbeatMissCount = 0;
+      } else {
+        // Temporary miss — mark for redraw but don't clear yet
+        boxesDrawn = false;
+      }
     }
   }, 2000);
 
