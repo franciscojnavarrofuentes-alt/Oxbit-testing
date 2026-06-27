@@ -299,11 +299,32 @@ export const useOrderlyConfig = () => {
       })),
     };
 
+    // Build Tutorials menu with submenu items
+    const tutorialsMenu: MainNavItem = {
+      name: "Tutorials",
+      href: "#",
+      children: [
+        {
+          name: "How to Deposit",
+          href: "https://youtu.be/741c4iYZJoo",
+          description: "Deposit tutorial",
+          target: "_blank",
+        },
+        {
+          name: "How to Withdraw",
+          href: "https://youtu.be/Q0yHyAJRMck",
+          description: "Withdrawal tutorial",
+          target: "_blank",
+        },
+      ],
+    };
+
     // Insert Earn menu after Markets (position 4)
     const menusWithEarn = [
       ...translatedEnabledMenus.slice(0, 4), // Trading, Swap, Portfolio, Markets
       earnMenu,
       ...translatedEnabledMenus.slice(4), // Aggr, TapeSurf, Leaderboard, Multi-screen
+      tutorialsMenu,
     ];
 
     const allMenuItems = [...menusWithEarn, ...customMenus];
