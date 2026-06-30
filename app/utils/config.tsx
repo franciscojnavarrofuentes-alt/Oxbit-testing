@@ -292,6 +292,7 @@ export const useOrderlyConfig = () => {
     const earnMenu: MainNavItem = {
       name: "Earn",
       href: "#",
+      activeHrefs: EARN_SUBMENU_ITEMS.map((item) => item.href),
       children: EARN_SUBMENU_ITEMS.map((item) => ({
         name: t(item.translationKey),
         href: item.href,
