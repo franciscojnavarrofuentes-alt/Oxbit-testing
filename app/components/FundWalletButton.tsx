@@ -3,7 +3,7 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import { ConvertUsdcToEth } from './ConvertUsdcToEth';
 import { SendFunds } from './SendFunds';
 
-export const FundWalletButton = () => {
+export const FundWalletButton = ({ dropUp = false }: { dropUp?: boolean }) => {
   const { wallets } = useWallets();
   const { fundWallet } = useFundWallet();
   const [isLoading, setIsLoading] = useState(false);
@@ -72,9 +72,9 @@ export const FundWalletButton = () => {
           <div
             style={{
               position: 'absolute',
-              top: '100%',
-              right: 0,
-              marginTop: '4px',
+              ...(dropUp
+                ? { bottom: '100%', left: 0, marginBottom: '4px' }
+                : { top: '100%', right: 0, marginTop: '4px' }),
               background: '#1e1e2e',
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '8px',

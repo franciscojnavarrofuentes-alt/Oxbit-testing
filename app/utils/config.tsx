@@ -380,7 +380,7 @@ export const useOrderlyConfig = () => {
               <CustomLeftNav
                 menus={translatedEnabledMenus}
                 externalLinks={customMenus}
-                extraContent={<FundWalletButton />}
+                extraContent={<FundWalletButton dropUp />}
               />
             )}
             <Link to="/">
