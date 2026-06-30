@@ -380,6 +380,7 @@ export const useOrderlyConfig = () => {
               <CustomLeftNav
                 menus={translatedEnabledMenus}
                 externalLinks={customMenus}
+                extraContent={<FundWalletButton />}
               />
             )}
             <Link to="/">
@@ -399,7 +400,7 @@ export const useOrderlyConfig = () => {
 
           <Flex itemAlign={"center"} className="oui-gap-2">
             {components.accountSummary}
-            <FundWalletButton />
+            {!isMobile && <FundWalletButton />}
             {components.linkDevice}
             {components.scanQRCode}
             {components.languageSwitcher}

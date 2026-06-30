@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react";
+import { FC, ReactNode, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Sheet,
@@ -24,6 +24,7 @@ type LeftNavUIProps = LeftNavProps &
       href: string;
       target?: string;
     }>;
+    extraContent?: ReactNode;
   };
 
 const LeftNavUI: FC<LeftNavUIProps> = (props) => {
@@ -90,6 +91,14 @@ const LeftNavSheet = modal.create<LeftNavUIProps>((props) => {
                     key={`external-${item.name}`}
                   />
                 ))}
+              </>
+            )}
+            {props.extraContent && (
+              <>
+                <div className="oui-w-full oui-border-t oui-border-line-12 oui-my-2 oui-bg-base-3"></div>
+                <div className="oui-px-3 oui-py-2 oui-w-full">
+                  {props.extraContent}
+                </div>
               </>
             )}
           </div>
