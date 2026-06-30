@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { generatePageTitle } from "@/utils/utils";
-import { Dashboard, ReferralProvider } from "@orderly.network/affiliate";
+import { MultiLevelAffiliatePage, ReferralProvider } from "@orderly.network/affiliate";
 
 export default function RewardsAffiliate() {
   return (
@@ -13,7 +13,7 @@ export default function RewardsAffiliate() {
         learnAffiliateUrl="https://orderly.network"
         referralLinkUrl={typeof window !== 'undefined' ? window.location.origin : "https://orderly.network"}
       >
-        <Dashboard.AffiliatePage />
+        <MultiLevelAffiliatePage />
       </ReferralProvider>
     </>
   );
