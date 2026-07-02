@@ -5,6 +5,7 @@ import { QueryClient } from "@tanstack/query-core";
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import { getEvmConnectors, getSolanaConfig } from '../../utils/walletConfig';
 import { getRuntimeConfig, getRuntimeConfigBoolean } from '@/utils/runtime-config';
+import { MfaVerificationModal } from '../MfaVerificationModal';
 
 type LoginMethod = "email" | "passkey" | "twitter" | "google";
 
@@ -47,6 +48,9 @@ const PrivyConnector = ({ children, networkId }: {
       solanaConfig={disableSolanaWallets ? undefined : getSolanaConfig(networkId)}
       privyConfig={{
         config: {
+          mfa: {
+            noPromptOnMfaRequired: false,
+          },
           appearance: {
             showWalletLoginFirst: false,
           },
@@ -72,6 +76,7 @@ const PrivyConnector = ({ children, networkId }: {
         queryClient: new QueryClient(),
       } : undefined}
     >
+      <MfaVerificationModal />
       {children}
     </WalletConnectorPrivyProvider>
   );
